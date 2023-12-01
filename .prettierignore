@@ -1,0 +1,11 @@
+# Folders
+/.history/
+/.vscode/
+/.yarn/
+/dist/
+/node_modules/
+/tmp/
+
+# Files
+/.pnp.*
+yarn.lock

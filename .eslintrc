@@ -1,0 +1,58 @@
+{
+  "env": {
+    "browser": false,
+    "jest": false,
+    "node": true
+  },
+  "extends": [
+    "canonical",
+    "canonical/node",
+    "canonical/typescript",
+    "plugin:import/typescript",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.eslint.json"
+  },
+  "plugins": ["import"],
+  "rules": {
+    "@typescript-eslint/array-type": [
+      2,
+      {
+        "default": "array"
+      }
+    ],
+    "@typescript-eslint/consistent-type-definitions": [2, "interface"],
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "@typescript-eslint/padding-line-between-statements": 0,
+    "arrow-body-style": [2, "as-needed"],
+    "canonical/destructuring-property-newline": 0,
+    "canonical/filename-match-regex": [2, "^[a-z0-9-]+$", true],
+    "canonical/import-specifier-newline": 0,
+    "import/order": [
+      2,
+      {
+        "alphabetize": {
+          "caseInsensitive": true,
+          "order": "asc"
+        },
+        "groups": ["type", "builtin", "external", "internal", "parent", "sibling", "index"],
+        "newlines-between": "always"
+      }
+    ],
+    "line-comment-position": 0,
+    "no-console": 0,
+    "no-inline-comments": 0,
+    "unicorn/no-array-reduce": 0,
+    "unicorn/no-unsafe-regex": 0,
+    "unicorn/prefer-node-protocol": 0, // Clashes with "import/order"
+    "unicorn/prefer-object-from-entries": 0,
+    "unicorn/prevent-abbreviations": 0
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    }
+  }
+}

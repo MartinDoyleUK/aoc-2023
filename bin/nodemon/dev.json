@@ -1,0 +1,14 @@
+{
+  "events": {
+    "start": "clear"
+  },
+  "execMap": {
+    "js": "node --experimental-specifier-resolution=node --no-warnings"
+  },
+  "ext": "js,json",
+  "restartable": "rs",
+  "verbose": false,
+  "watch": [
+    "dist/"
+  ]
+}
