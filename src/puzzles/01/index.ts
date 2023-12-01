@@ -5,9 +5,13 @@ import url from 'node:url';
 
 import { logAnswer } from '../../utils';
 
-type CheckForDigitFn = (opts: { includeWords: boolean, input: string, pos: number }) => string | undefined;
+type CheckForDigitFn = (opts: {
+  includeWords: boolean;
+  input: string;
+  pos: number;
+}) => string | undefined;
 
-type GetNumberForLineFn = (opts: { includeWords: boolean, line: string }) => number
+type GetNumberForLineFn = (opts: { includeWords: boolean; line: string }) => number;
 
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
 const THIS_DIRNAME = path.dirname(THIS_FILENAME);
@@ -25,20 +29,23 @@ const USE_TEST_DATA = false;
 
 /* eslint-disable canonical/sort-keys */
 const STRING_VALUES = {
-  'zero': '0',
-  'one': '1',
-  'two': '2',
-  'three': '3',
-  'four': '4',
-  'five': '5',
-  'six': '6',
-  'seven': '7',
-  'eight': '8',
-  'nine': '9',
+  zero: '0',
+  one: '1',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  six: '6',
+  seven: '7',
+  eight: '8',
+  nine: '9',
 };
 /* eslint-enable canonical/sort-keys */
 const REGEX_NUMBER = new RegExp(`^(${Object.keys(STRING_VALUES).join('|')}|\\d)`, 'u');
-const LONGEST_NUMBER_STRING = Object.keys(STRING_VALUES).reduce((prev, next) => next.length > prev ? next.length : prev, 0);
+const LONGEST_NUMBER_STRING = Object.keys(STRING_VALUES).reduce(
+  (prev, next) => (next.length > prev ? next.length : prev),
+  0,
+);
 
 const checkForDigit: CheckForDigitFn = ({ input, pos, includeWords }) => {
   const nextWindow = input.slice(pos, pos + LONGEST_NUMBER_STRING);
@@ -57,7 +64,7 @@ const checkForDigit: CheckForDigitFn = ({ input, pos, includeWords }) => {
   // console.log(`Checking for digit at position ${pos} in input ${input} (window: "${nextWindow}") - found ${digit}`);
 
   return digit;
-}
+};
 
 const getNumberForLine: GetNumberForLineFn = ({ includeWords, line }) => {
   let firstDigit: string | undefined;
@@ -80,7 +87,7 @@ const getNumberForLine: GetNumberForLineFn = ({ includeWords, line }) => {
   const lineValue = Number.parseInt(firstDigit + lastDigit, 10);
   // console.log(`Line ${line} has value ${lineValue}`);
   return lineValue;
-}
+};
 
 const runOne = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;

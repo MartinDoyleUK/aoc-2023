@@ -1,5 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Unfortunately cannot wrap in npm script!
-yarn commitlint --edit $1
