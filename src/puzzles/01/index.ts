@@ -16,6 +16,10 @@ type GetNumberForLineFn = (opts: {
   line: string;
 }) => number;
 
+// Toggle this to use test or real data
+const USE_TEST_DATA = false;
+
+// Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
 const THIS_DIRNAME = path.dirname(THIS_FILENAME);
 const PATHS = {
@@ -28,7 +32,6 @@ const DATA = {
   TEST1: fs.readFileSync(PATHS.TEST_DATA_01, 'utf8') as string,
   TEST2: fs.readFileSync(PATHS.TEST_DATA_02, 'utf8') as string,
 };
-const USE_TEST_DATA = false;
 
 /* eslint-disable canonical/sort-keys */
 const STRING_VALUES = {
@@ -97,6 +100,7 @@ const getNumberForLine: GetNumberForLineFn = ({ includeWords, line }) => {
   return lineValue;
 };
 
+// Run task one
 const runOne = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
@@ -110,6 +114,7 @@ const runOne = () => {
   logAnswer(1, total, USE_TEST_DATA ? 142 : 55_477);
 };
 
+// Run task two
 const runTwo = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
@@ -123,6 +128,7 @@ const runTwo = () => {
   logAnswer(2, total, USE_TEST_DATA ? 281 : undefined);
 };
 
+// Export a function to run both tasks
 export const runTasks = () => {
   runOne();
   runTwo();
