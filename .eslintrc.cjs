@@ -1,100 +1,105 @@
-const [OFF, _WARN, ERROR]= [0, 1, 2];
+const [OFF, _WARN, ERROR] = [0, 1, 2];
 
 module.exports = {
   extends: ['canonical/auto'],
-  overrides: [{
-    files: ['package.json'],
-    rules: {
-      // Specific sorting rules for the package.json file
-      'jsonc/sort-keys': [
-        ERROR,
-        {
-          order: [
-            // Project information
-            'name',
-            'version',
-            'description',
-            'keywords',
-            'homepage',
-            'bugs',
-            'license',
-            'author',
-            'contributors',
-            'repository',
-            'funding',
-            'private',
+  overrides: [
+    {
+      files: ['package.json'],
+      rules: {
+        // Specific sorting rules for the package.json file
+        'jsonc/sort-keys': [
+          ERROR,
+          {
+            order: [
+              // Project information
+              'name',
+              'version',
+              'description',
+              'keywords',
+              'homepage',
+              'bugs',
+              'license',
+              'author',
+              'contributors',
+              'repository',
+              'funding',
+              'private',
 
-            // Technical usage information
-            'engines',
-            'engineStrict',
-            'os',
-            'cpu',
-            'publishConfig',
-            'workspaces',
-            'type',
-            'config',
+              // Technical usage information
+              'engines',
+              'engineStrict',
+              'os',
+              'cpu',
+              'publishConfig',
+              'workspaces',
+              'type',
+              'config',
 
-            // Output/build definitions
-            'files',
-            'directories',
-            'packageManager',
-            'exports',
-            'imports',
-            'main',
-            'browser',
-            'bin',
-            'man',
+              // Output/build definitions
+              'files',
+              'directories',
+              'packageManager',
+              'exports',
+              'imports',
+              'main',
+              'browser',
+              'bin',
+              'man',
 
-            // Scripts
-            'scripts',
+              // Scripts
+              'scripts',
 
-            // Other configuration
-            'lint-staged',
-            'nutkit',
+              // Other configuration
+              'lint-staged',
+              'nutkit',
 
-            // Dependency related configuration
-            'dependencies',
-            'devDependencies',
-            'peerDependencies',
-            'peerDependenciesMeta',
-            'bundleDependencies',
-            'optionalDependencies',
-            'overrides',
-          ],
-          pathPattern: '^$',
-        },
-        {
-          order: { type: 'asc' },
-          pathPattern: '^(?:dev|peer|optional|bundle)?[Dd]ependencies(?:Meta)?$',
-        },
-      ],
-    }},{
-    extends: ['canonical/prettier'],
-    files: ['*.js', '*.ts', '*.tsx'],
-    rules: {
-      'prettier/prettier': [
-        ERROR,
-        {
-          arrowParens: 'always',
-          bracketSameLine: false,
-          bracketSpacing: true,
-          endOfLine: 'lf',
-          printWidth: 120,
-          proseWrap: 'preserve',
-          quoteProps: 'as-needed',
-          semi: true,
-          singleAttributePerLine: true,
-          singleQuote: true,
-          tabWidth: 2,
-          trailingComma: 'all',
-          useTabs: false,
-        },
-        {
-          usePrettierrc: false,
-        },
-      ],
+              // Dependency related configuration
+              'dependencies',
+              'devDependencies',
+              'peerDependencies',
+              'peerDependenciesMeta',
+              'bundleDependencies',
+              'optionalDependencies',
+              'overrides',
+            ],
+            pathPattern: '^$',
+          },
+          {
+            order: { type: 'asc' },
+            pathPattern:
+              '^(?:dev|peer|optional|bundle)?[Dd]ependencies(?:Meta)?$',
+          },
+        ],
+      },
     },
-  }],
+    {
+      extends: ['canonical/prettier'],
+      files: ['*.js', '*.ts', '*.tsx'],
+      rules: {
+        'prettier/prettier': [
+          ERROR,
+          {
+            arrowParens: 'always',
+            bracketSameLine: false,
+            bracketSpacing: true,
+            endOfLine: 'lf',
+            printWidth: 80,
+            proseWrap: 'preserve',
+            quoteProps: 'as-needed',
+            semi: true,
+            singleAttributePerLine: true,
+            singleQuote: true,
+            tabWidth: 2,
+            trailingComma: 'all',
+            useTabs: false,
+          },
+          {
+            usePrettierrc: false,
+          },
+        ],
+      },
+    },
+  ],
   parserOptions: {
     babelOptions: {
       parserOpts: {
@@ -117,10 +122,10 @@ module.exports = {
       ERROR,
       {
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
         caughtErrorsIgnorePattern: '^_',
         destructuredArrayIgnorePattern: '^_',
         ignoreRestSiblings: true,
+        varsIgnorePattern: '^_',
       },
     ],
 
@@ -145,7 +150,14 @@ module.exports = {
           order: 'asc',
         },
         distinctGroup: true,
-        groups: ['type', 'builtin', 'external', 'internal', 'parent', 'sibling'],
+        groups: [
+          'type',
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+        ],
         'newlines-between': 'always',
         pathGroups: [
           {
@@ -156,6 +168,9 @@ module.exports = {
         ],
       },
     ],
+
+    // Allow the use of console.log
+    'no-console': OFF,
 
     // This needs to be off when using the @typescript-eslint/no-unused-vars rule
     'no-unused-vars': OFF,
@@ -174,4 +189,3 @@ module.exports = {
     'unicorn/prevent-abbreviations': OFF,
   },
 };
-

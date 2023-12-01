@@ -2,7 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 // import process from 'node:process';
 
-import { logComplete, logError, logPuzzleDay, logStart, logTime } from './utils';
+import {
+  logComplete,
+  logError,
+  logPuzzleDay,
+  logStart,
+  logTime,
+} from './utils';
 
 const HERE = path.dirname(import.meta.url).slice('file:'.length);
 const DAY_REGEX = /(\d{2})$/u;
@@ -19,7 +25,9 @@ const run = async () => {
 
   // Get all of the puzzle days
   const puzzlesPath = path.join(HERE, 'puzzles');
-  const puzzleDays = (await fs.readdir(puzzlesPath)).sort(sortStringsNumerically);
+  const puzzleDays = (await fs.readdir(puzzlesPath)).sort(
+    sortStringsNumerically,
+  );
 
   // Get the paths to the puzzles
   const allPuzzlePaths = [];
@@ -34,13 +42,16 @@ const run = async () => {
   const startIndex = runAll ? 0 : allPuzzlePaths.length - 1;
   const endIndex = allPuzzlePaths.length;
   for (let index = startIndex; index < endIndex; index++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const nextPuzzlePath = allPuzzlePaths[index]!;
     const relativePath = `./${path.relative(HERE, nextPuzzlePath)}`;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [, day] = DAY_REGEX.exec(relativePath)!;
-    const runNextDay = (await import(relativePath)).default;
+    const { runTasks } = await import(relativePath);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     logPuzzleDay(day!, index === startIndex);
     const before = performance.now();
-    await runNextDay();
+    await runTasks();
     logTime(before);
   }
 

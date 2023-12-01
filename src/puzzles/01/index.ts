@@ -11,7 +11,10 @@ type CheckForDigitFn = (opts: {
   pos: number;
 }) => string | undefined;
 
-type GetNumberForLineFn = (opts: { includeWords: boolean; line: string }) => number;
+type GetNumberForLineFn = (opts: {
+  includeWords: boolean;
+  line: string;
+}) => number;
 
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
 const THIS_DIRNAME = path.dirname(THIS_FILENAME);
@@ -41,7 +44,11 @@ const STRING_VALUES = {
   nine: '9',
 };
 /* eslint-enable canonical/sort-keys */
-const REGEX_NUMBER = new RegExp(`^(${Object.keys(STRING_VALUES).join('|')}|\\d)`, 'u');
+const REGEX_NUMBER = new RegExp(
+  `^(${Object.keys(STRING_VALUES).join('|')}|\\d)`,
+  'u',
+);
+// eslint-disable-next-line unicorn/no-array-reduce
 const LONGEST_NUMBER_STRING = Object.keys(STRING_VALUES).reduce(
   (prev, next) => (next.length > prev ? next.length : prev),
   0,
@@ -53,6 +60,7 @@ const checkForDigit: CheckForDigitFn = ({ input, pos, includeWords }) => {
 
   const match = nextWindow.match(REGEX_NUMBER);
   if (match) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const number = match[1]!;
     if (number.length === 1) {
       digit = number;
@@ -115,7 +123,7 @@ const runTwo = () => {
   logAnswer(2, total, USE_TEST_DATA ? 281 : undefined);
 };
 
-export default async function () {
+export const runTasks = () => {
   runOne();
   runTwo();
-}
+};

@@ -8,5 +8,7 @@
   "ext": "js,json",
   "restartable": "rs",
   "verbose": false,
-  "watch": ["dist/"]
+  "watch": [
+    "dist/"
+  ]
 }

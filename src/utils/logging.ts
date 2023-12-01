@@ -14,7 +14,11 @@ Day ${day}`),
   );
 };
 
-export const logAnswer = (part: PartNumber, answer: unknown, expected?: unknown) => {
+export const logAnswer = (
+  part: PartNumber,
+  answer: unknown,
+  expected?: unknown,
+) => {
   const partText = `Part ${part}`;
   let answerText: string;
   if (typeof answer === 'number') {
@@ -38,7 +42,11 @@ export const logAnswer = (part: PartNumber, answer: unknown, expected?: unknown)
     );
   }
 
-  const messageParts = [chalk.bold.cyan(partText), '➡️ ', chalk.bold.yellow(answerText)];
+  const messageParts = [
+    chalk.bold.cyan(partText),
+    '➡️ ',
+    chalk.bold.yellow(answerText),
+  ];
   console.info(messageParts.join(' '));
 };
 
