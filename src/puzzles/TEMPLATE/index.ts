@@ -6,7 +6,7 @@ import url from 'node:url';
 import { logAnswer } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = false;
+const USE_TEST_DATA = true;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);

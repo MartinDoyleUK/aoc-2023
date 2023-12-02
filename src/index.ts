@@ -32,6 +32,9 @@ const run = async () => {
   // Get the paths to the puzzles
   const allPuzzlePaths = [];
   for (const nextDay of puzzleDays) {
+    if (nextDay === 'TEMPLATE') {
+      continue;
+    }
     const nextDayPath = path.join(puzzlesPath, nextDay);
     allPuzzlePaths.push(nextDayPath);
   }
