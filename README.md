@@ -13,6 +13,13 @@ You will need [yarn](https://yarnpkg.com/) to run this properly. Just use `npm i
 
 ## Running
 
-You will need two terminal windows/tabs/panes to run this. In the first one, setup the compilation tasks by running `yarn dev:watch` and then in the second run the actual puzzles with `yarn dev`. This gives a live-reloading terminal view of the answers.
+To run the whole project, just run `yarn start`, which will run all of the days' tasks.
+
+## Developing
+
+In development mode, only the most recent day found will run. You will need two terminal windows/tabs/panes to run this.
+
+In the first window, start the compilation tasks by running `yarn dev:watch` and then in the second run the actual puzzles with `yarn dev`. This gives a live-reloading terminal view of the answers.
 
 > **TIP:** I run the first "watch" task in _iTerm_ and then run the main "dev" task in a terminal within VSCode, so I can see the live results as I type.
+

@@ -30,8 +30,8 @@
     "----------------RUNNING----------------": "",
     "dev:watch": "yarn clean && run-p --print-label build:watch compile:watch copy:watch",
     "dev": "nodemon --config bin/nodemon/dev.json",
-    "start:clean": "run-s build:clean start",
-    "start": "node --experimental-specifier-resolution=node --no-warnings dist/index.js --runAll"
+    "run": "node --experimental-specifier-resolution=node --no-warnings dist/index.js --runAll",
+    "start": "run-s build:clean run"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.5",
