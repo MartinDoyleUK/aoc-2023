@@ -77,10 +77,7 @@ const getGameResult: GetGameResultFn = (inputLine) => {
   }
 
   const gameNumber = Number.parseInt(gameId, 10);
-  const minCubesPower = Object.values(minCubes).reduce(
-    (prev, next) => prev * next,
-    1,
-  );
+  const minCubesPower = Object.values(minCubes).reduce((prev, next) => prev * next, 1);
 
   return {
     gameNumber,
@@ -103,9 +100,7 @@ const runOne = () => {
       // );
       return result;
     })
-    .filter(
-      (nextResult) => nextResult !== undefined && nextResult.isPossible,
-    ) as GameResult[];
+    .filter((nextResult) => nextResult !== undefined && nextResult.isPossible) as GameResult[];
   const totalOfValidGames = validGames.reduce(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     (prev, next) => prev + next!.gameNumber,

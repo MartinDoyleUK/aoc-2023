@@ -14,11 +14,7 @@ Day ${day}`),
   );
 };
 
-export const logAnswer = (
-  part: PartNumber,
-  answer: unknown,
-  expected?: unknown,
-) => {
+export const logAnswer = (part: PartNumber, answer: unknown, expected?: unknown) => {
   const partText = `Part ${part}`;
   let answerText: string;
   if (typeof answer === 'number') {
@@ -36,17 +32,11 @@ export const logAnswer = (
     const isExpected = answer === expected;
     const colourFn = isExpected ? chalk.green : chalk.red;
     answerText += colourFn(
-      isExpected
-        ? ' (matches expected value)'
-        : ` (does not match expected value of ${JSON.stringify(expected)})`,
+      isExpected ? ' (matches expected value)' : ` (does not match expected value of ${JSON.stringify(expected)})`,
     );
   }
 
-  const messageParts = [
-    chalk.bold.cyan(partText),
-    '➡️ ',
-    chalk.bold.yellow(answerText),
-  ];
+  const messageParts = [chalk.bold.cyan(partText), '➡️ ', chalk.bold.yellow(answerText)];
   console.info(messageParts.join(' '));
 };
 

@@ -2,13 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 // import process from 'node:process';
 
-import {
-  logComplete,
-  logError,
-  logPuzzleDay,
-  logStart,
-  logTime,
-} from './utils';
+import { logComplete, logError, logPuzzleDay, logStart, logTime } from './utils';
 
 const HERE = path.dirname(import.meta.url).slice('file:'.length);
 const DAY_REGEX = /(\d{2})$/u;
@@ -25,9 +19,7 @@ const run = async () => {
 
   // Get all of the puzzle days
   const puzzlesPath = path.join(HERE, 'puzzles');
-  const puzzleDays = (await fs.readdir(puzzlesPath)).sort(
-    sortStringsNumerically,
-  );
+  const puzzleDays = (await fs.readdir(puzzlesPath)).sort(sortStringsNumerically);
 
   // Get the paths to the puzzles
   const allPuzzlePaths = [];

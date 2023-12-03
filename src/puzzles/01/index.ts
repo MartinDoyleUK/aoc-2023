@@ -5,16 +5,9 @@ import url from 'node:url';
 
 import { logAnswer } from '../../utils';
 
-type CheckForDigitFn = (opts: {
-  includeWords: boolean;
-  input: string;
-  pos: number;
-}) => string | undefined;
+type CheckForDigitFn = (opts: { includeWords: boolean; input: string; pos: number }) => string | undefined;
 
-type GetNumberForLineFn = (opts: {
-  includeWords: boolean;
-  line: string;
-}) => number;
+type GetNumberForLineFn = (opts: { includeWords: boolean; line: string }) => number;
 
 // Toggle this to use test or real data
 const USE_TEST_DATA = false;
@@ -47,10 +40,7 @@ const STRING_VALUES = {
   nine: '9',
 };
 /* eslint-enable canonical/sort-keys */
-const REGEX_NUMBER = new RegExp(
-  `^(${Object.keys(STRING_VALUES).join('|')}|\\d)`,
-  'u',
-);
+const REGEX_NUMBER = new RegExp(`^(${Object.keys(STRING_VALUES).join('|')}|\\d)`, 'u');
 // eslint-disable-next-line unicorn/no-array-reduce
 const LONGEST_NUMBER_STRING = Object.keys(STRING_VALUES).reduce(
   (prev, next) => (next.length > prev ? next.length : prev),
