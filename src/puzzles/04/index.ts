@@ -28,11 +28,11 @@ const DATA = {
   TEST2: fs.readFileSync(PATHS.TEST_DATA_02, 'utf8') as string,
 };
 
-// Test constants
-const REGEX_CARD = /^Card \d+: ([^|]+) \| (.+)$/u;
-
 const toNumArray = (input: string) => {
-  return input.split(' ').map((numStr) => Number.parseInt(numStr, 10));
+  return input
+    .trim()
+    .split(' ')
+    .map((numStr) => Number.parseInt(numStr, 10));
 };
 
 // Run task one
@@ -46,9 +46,13 @@ const runOne = () => {
 
   let totalPoints = 0;
   for (const nextLine of lines) {
-    const [, winningNums, myNums] = REGEX_CARD.exec(nextLine) || [];
-    const winners = new Set(winningNums!.split(' '));
-    const myWinners = myNums!.split(' ').filter((myNextNum) => winners.has(myNextNum));
+    const [, rawNumbers] = nextLine.split(':');
+    const [rawWinning, rawMyNums] = rawNumbers!.split('|');
+    const winners = new Set(rawWinning!.trim()!.split(' '));
+    const myWinners = rawMyNums!
+      .trim()
+      .split(' ')
+      .filter((myNextNum) => winners.has(myNextNum));
     const cardPoints = myWinners.length === 0 ? 0 : 2 ** (myWinners.length - 1);
 
     // console.log({ cardPoints, myNums, myWinners, winners, winningNums });
@@ -70,11 +74,12 @@ const runTwo = () => {
 
   const scratchCardsMap = new Map<number, Scratchcard>(
     lines.map((nextLine, index) => {
-      const [, winningNums, myNums] = REGEX_CARD.exec(nextLine) || [];
+      const [, rawNumbers] = nextLine.split(':');
+      const [rawWinning, rawMyNums] = rawNumbers!.split('|');
       const scratchcard: Scratchcard = {
-        myNumbers: toNumArray(myNums!),
+        myNumbers: toNumArray(rawMyNums!),
         toRead: 1,
-        winners: new Set(toNumArray(winningNums!)),
+        winners: new Set(toNumArray(rawWinning!)),
       };
       return [index + 1, scratchcard];
     }),
@@ -82,17 +87,15 @@ const runTwo = () => {
 
   let totalScratchcards = 0;
   for (const [cardNum, card] of scratchCardsMap.entries()) {
-    while (card.toRead-- > 0) {
-      totalScratchcards++;
-      const myWinners = card.myNumbers.filter((nextNum) => card.winners.has(nextNum));
-      const numMatches = myWinners.length;
-      for (let i = 0; i < numMatches; i++) {
-        scratchCardsMap.get(cardNum + i + 1)!.toRead += 1;
-      }
+    totalScratchcards += card.toRead;
+
+    const myWinners = card.myNumbers.filter((nextNum) => card.winners.has(nextNum));
+    const numMatches = myWinners.length;
+    for (let i = 0; i < numMatches; i++) {
+      scratchCardsMap.get(cardNum + i + 1)!.toRead += card.toRead;
     }
   }
 
-  // NOTE: Slow answer!
   logAnswer(2, taskStarted, totalScratchcards, USE_TEST_DATA ? 30 : 8_570_000);
 };
 
