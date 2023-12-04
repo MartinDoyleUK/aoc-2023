@@ -89,6 +89,7 @@ const getGameResult: GetGameResultFn = (inputLine) => {
 
 // Run task one
 const runOne = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -101,17 +102,14 @@ const runOne = () => {
       return result;
     })
     .filter((nextResult) => nextResult !== undefined && nextResult.isPossible) as GameResult[];
-  const totalOfValidGames = validGames.reduce(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    (prev, next) => prev + next!.gameNumber,
-    0,
-  );
+  const totalOfValidGames = validGames.reduce((prev, next) => prev + next!.gameNumber, 0);
 
-  logAnswer(1, totalOfValidGames, USE_TEST_DATA ? 8 : 2_486);
+  logAnswer(1, taskStarted, totalOfValidGames, USE_TEST_DATA ? 8 : 2_486);
 };
 
 // Run task two
 const runTwo = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -125,13 +123,9 @@ const runTwo = () => {
     })
     .filter((nextResult) => nextResult !== undefined) as GameResult[];
 
-  const totalOfCubePowers = gameResults.reduce(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    (prev, next) => prev + next!.minCubesPower,
-    0,
-  );
+  const totalOfCubePowers = gameResults.reduce((prev, next) => prev + next!.minCubesPower, 0);
 
-  logAnswer(2, totalOfCubePowers, USE_TEST_DATA ? 2_286 : 87_984);
+  logAnswer(2, taskStarted, totalOfCubePowers, USE_TEST_DATA ? 2_286 : 87_984);
 };
 
 // Export a function to run both tasks

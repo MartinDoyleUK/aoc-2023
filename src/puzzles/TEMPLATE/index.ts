@@ -24,18 +24,20 @@ const DATA = {
 
 // Run task one
 const runOne = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
-  logAnswer(1, lines.length, USE_TEST_DATA ? undefined : undefined);
+  logAnswer(1, taskStarted, lines.length, USE_TEST_DATA ? undefined : undefined);
 };
 
 // Run task two
 const runTwo = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
-  logAnswer(2, lines.length, USE_TEST_DATA ? undefined : undefined);
+  logAnswer(2, taskStarted, lines.length, USE_TEST_DATA ? undefined : undefined);
 };
 
 // Export a function to run both tasks

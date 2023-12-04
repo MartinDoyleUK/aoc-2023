@@ -117,6 +117,9 @@ module.exports = {
     // Prefer interfaces over type aliases
     '@typescript-eslint/consistent-type-definitions': [ERROR, 'interface'],
 
+    // Use non-null assertion lots in testing because of known inputs, so disable this
+    '@typescript-eslint/no-non-null-assertion': OFF,
+
     // Do not alert for unused vars if there's an explicit underscore prefix to ignore them, also allow vars to be unused if they're removing values from a rest destructuring
     '@typescript-eslint/no-unused-vars': [
       ERROR,

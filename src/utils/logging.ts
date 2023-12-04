@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { NUMBER_FORMATTER, MILLISECOND_FORMATTER } from './formatters';
+import { NUMBER_FORMATTER, timeSinceStarted } from './formatters';
 
 type PartNumber = 1 | 2;
 
@@ -14,8 +14,9 @@ Day ${day}`),
   );
 };
 
-export const logAnswer = (part: PartNumber, answer: unknown, expected?: unknown) => {
-  const partText = `Part ${part}`;
+export const logAnswer = (part: PartNumber, taskStarted: number, answer: unknown, expected?: unknown) => {
+  const timeTaken = timeSinceStarted(taskStarted);
+  const partText = `Part ${part} took ${timeTaken}`;
   let answerText: string;
   if (typeof answer === 'number') {
     const formatted = NUMBER_FORMATTER.format(answer);
@@ -41,13 +42,13 @@ export const logAnswer = (part: PartNumber, answer: unknown, expected?: unknown)
 };
 
 export const logTime = (before: number) => {
-  const timeTaken = MILLISECOND_FORMATTER.format(performance.now() - before);
-  console.info(chalk.green(`Runtime: ${timeTaken}ms`));
+  const timeTaken = timeSinceStarted(before);
+  console.info(chalk.green(`Took ${timeTaken} to run all tasks for day`));
 };
 
 export const logComplete = (before: number) => {
-  const timeTaken = MILLISECOND_FORMATTER.format(performance.now() - before);
-  const completedMessage = ` Completed in ${timeTaken}ms`;
+  const timeTaken = timeSinceStarted(before);
+  const completedMessage = ` All completed in ${timeTaken}`;
   const message = `
 === ${completedMessage} ===
 `;

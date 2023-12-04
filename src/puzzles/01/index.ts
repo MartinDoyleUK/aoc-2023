@@ -53,7 +53,6 @@ const checkForDigit: CheckForDigitFn = ({ input, pos, includeWords }) => {
 
   const match = nextWindow.match(REGEX_NUMBER);
   if (match) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const number = match[1]!;
     if (number.length === 1) {
       digit = number;
@@ -92,6 +91,7 @@ const getNumberForLine: GetNumberForLineFn = ({ includeWords, line }) => {
 
 // Run task one
 const runOne = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -101,11 +101,12 @@ const runOne = () => {
     total += lineValue;
   }
 
-  logAnswer(1, total, USE_TEST_DATA ? 142 : 55_477);
+  logAnswer(1, taskStarted, total, USE_TEST_DATA ? 142 : 55_477);
 };
 
 // Run task two
 const runTwo = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -115,7 +116,7 @@ const runTwo = () => {
     total += lineValue;
   }
 
-  logAnswer(2, total, USE_TEST_DATA ? 281 : undefined);
+  logAnswer(2, taskStarted, total, USE_TEST_DATA ? 281 : 54_431);
 };
 
 // Export a function to run both tasks

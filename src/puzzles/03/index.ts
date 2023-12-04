@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, id-length */
-
+/* eslint-disable id-length */
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
@@ -117,6 +116,7 @@ const parseData = (data: string) => {
 
 // Run task one
 const runOne = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
 
   const { numbers, symbols } = parseData(dataToUse);
@@ -139,11 +139,12 @@ const runOne = () => {
 
   const totalOfValidNumbers = numbersNextToSymbols.reduce((prev, next) => prev + next, 0);
 
-  logAnswer(1, totalOfValidNumbers, USE_TEST_DATA ? 4_361 : 528_799);
+  logAnswer(1, taskStarted, totalOfValidNumbers, USE_TEST_DATA ? 4_361 : 528_799);
 };
 
 // Run task two
 const runTwo = () => {
+  const taskStarted = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
 
   const { numbers, symbols } = parseData(dataToUse);
@@ -184,7 +185,7 @@ const runTwo = () => {
 
   const totalOfGearRatios = gearRatios.reduce((prev, next) => prev + next, 0);
 
-  logAnswer(2, totalOfGearRatios, USE_TEST_DATA ? 467_835 : 84_907_174);
+  logAnswer(2, taskStarted, totalOfGearRatios, USE_TEST_DATA ? 467_835 : 84_907_174);
 };
 
 // Export a function to run both tasks
