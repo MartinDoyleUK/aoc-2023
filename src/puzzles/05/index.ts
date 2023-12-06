@@ -6,10 +6,11 @@ import url from 'node:url';
 
 import { logAnswer } from '../../utils';
 
+import { Range, consolidateRanges } from './range';
 import { TransformMap } from './transform-map';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = true;
+const USE_TEST_DATA = false;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -33,7 +34,7 @@ const REGEX = {
 };
 
 const parseLines = (lines: string[], seedNumsAreRange = false) => {
-  const seedRanges: [number, number][] = [];
+  const seedRanges: Range[] = [];
   const transformMaps: TransformMap[] = [];
   let nextTransformMap: TransformMap | undefined;
   for (const nextLine of lines) {
@@ -45,10 +46,10 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
         while (mappedSeedNums.length > 0) {
           const start = mappedSeedNums.shift()!;
           const length = mappedSeedNums.shift()!;
-          seedRanges.push([start, length]);
+          seedRanges.push(new Range(start, length));
         }
       } else {
-        seedRanges.push(...mappedSeedNums.map((nextSeed) => [nextSeed, 1] as [number, number]));
+        seedRanges.push(...mappedSeedNums.map((nextSeed) => new Range(nextSeed, 1)));
       }
     } else if ((match = REGEX.MapTitle.exec(nextLine))) {
       const [, source, dest] = match;
@@ -78,44 +79,24 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
   };
 };
 
-const findLowestLocation = (seedRanges: [number, number][], transformMaps: TransformMap[]) => {
-  const reversedMaps = transformMaps.slice().reverse();
-  let lowestLocation: number | undefined;
+const findLowestLocation = (seedRanges: Range[], transformMaps: TransformMap[]) => {
+  let nextRangesToMap: Range[] = seedRanges.slice().sort((a, b) => a.lower - b.lower);
+  let mappedRanges: Range[] = [];
 
-  let testLocation = 0;
-  while (lowestLocation === undefined) {
-    let potentialSeedNum = testLocation;
-    for (const nextMap of reversedMaps) {
-      potentialSeedNum = nextMap.mapValReverse(potentialSeedNum);
+  for (const nextMap of transformMaps) {
+    mappedRanges = [];
+    let nextRange: Range | undefined;
+    while ((nextRange = nextRangesToMap.shift())) {
+      const nextMappedRanges = nextMap.mapRange(nextRange);
+      mappedRanges.push(...nextMappedRanges);
     }
-
-    for (const [rangeStart, rangeLength] of seedRanges) {
-      if (potentialSeedNum >= rangeStart && potentialSeedNum <= rangeStart + rangeLength) {
-        lowestLocation = testLocation;
-      }
-    }
-
-    testLocation++;
+    nextRangesToMap = consolidateRanges(mappedRanges);
   }
 
-  console.log('seedRanges', seedRanges);
-  for (const [nextStartingSeed, nextSeedRangeLength] of seedRanges) {
-    for (let nextSeedNum = nextStartingSeed; nextSeedNum < nextStartingSeed + nextSeedRangeLength; nextSeedNum++) {
-      const transformations: number[] = [nextSeedNum];
-      // const before = performance.now();
-      for (const nextMap of transformMaps) {
-        const lastVal = transformations.at(-1)!;
-        transformations.push(nextMap.mapVal(lastVal));
-      }
-      // const timeTaken = performance.now() - before;
-      // console.log(`${timeTaken}ms`);
-
-      // console.log(transformations.join(' -> '));
-
-      const nextLocation = transformations.at(-1)!;
-      if (nextLocation < lowestLocation) {
-        lowestLocation = nextLocation;
-      }
+  let lowestLocation = Number.MAX_SAFE_INTEGER;
+  for (const { lower } of nextRangesToMap) {
+    if (lower < lowestLocation) {
+      lowestLocation = lower;
     }
   }
 
@@ -149,7 +130,7 @@ const runTwo = () => {
   const { seedRanges, transformMaps } = parseLines(lines, true);
   const lowestLocation = findLowestLocation(seedRanges, transformMaps);
 
-  logAnswer(2, taskStarted, lowestLocation, USE_TEST_DATA ? 46 : undefined);
+  logAnswer(2, taskStarted, lowestLocation, USE_TEST_DATA ? 46 : 1_240_035);
 };
 
 // Export a function to run both tasks
