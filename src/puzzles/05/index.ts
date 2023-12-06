@@ -9,7 +9,7 @@ import { logAnswer } from '../../utils';
 import { TransformMap } from './transform-map';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = false;
+const USE_TEST_DATA = true;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -32,10 +32,8 @@ const REGEX = {
   Seeds: /^seeds: (.+)$/u,
 };
 
-const createRangeArray = (start: number, length: number) => Array.from({ length }, (_, nextSeed) => nextSeed + start);
-
 const parseLines = (lines: string[], seedNumsAreRange = false) => {
-  let allSeedNums: number[] | undefined; // Allow it to be used later without warnings about initialisation
+  const seedRanges: [number, number][] = [];
   const transformMaps: TransformMap[] = [];
   let nextTransformMap: TransformMap | undefined;
   for (const nextLine of lines) {
@@ -44,18 +42,13 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
       const [, seedNums] = match;
       const mappedSeedNums = seedNums!.split(' ').map((nextSeed) => Number.parseInt(nextSeed, 10));
       if (seedNumsAreRange) {
-        allSeedNums = [];
-        for (let i = 0; i < mappedSeedNums!.length; i++) {
-          const firstNum = mappedSeedNums![i++]!;
-          const rangeLength = mappedSeedNums![i]!;
-          const range = createRangeArray(firstNum, rangeLength);
-
-          // console.log({ firstNum, range, rangeLength });
-
-          allSeedNums.push(...range);
+        while (mappedSeedNums.length > 0) {
+          const start = mappedSeedNums.shift()!;
+          const length = mappedSeedNums.shift()!;
+          seedRanges.push([start, length]);
         }
       } else {
-        allSeedNums = mappedSeedNums;
+        seedRanges.push(...mappedSeedNums.map((nextSeed) => [nextSeed, 1] as [number, number]));
       }
     } else if ((match = REGEX.MapTitle.exec(nextLine))) {
       const [, source, dest] = match;
@@ -79,31 +72,50 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
   // Add final map
   transformMaps.push(nextTransformMap!);
 
-  // Make sure we have seeds
-  if (allSeedNums === undefined) {
-    throw new Error("Didn't find any seeds!");
-  }
-
   return {
-    seedNums: allSeedNums,
+    seedRanges,
     transformMaps,
   };
 };
 
-const findLowestLocation = (seedNums: number[], transformMaps: TransformMap[]) => {
-  let lowestLocation = Number.MAX_SAFE_INTEGER;
-  for (const nextSeedNum of seedNums) {
-    const transformations: number[] = [nextSeedNum];
-    for (const nextMap of transformMaps) {
-      const lastVal = transformations.at(-1)!;
-      transformations.push(nextMap.mapVal(lastVal));
+const findLowestLocation = (seedRanges: [number, number][], transformMaps: TransformMap[]) => {
+  const reversedMaps = transformMaps.slice().reverse();
+  let lowestLocation: number | undefined;
+
+  let testLocation = 0;
+  while (lowestLocation === undefined) {
+    let potentialSeedNum = testLocation;
+    for (const nextMap of reversedMaps) {
+      potentialSeedNum = nextMap.mapValReverse(potentialSeedNum);
     }
 
-    // console.log(transformations.join(' -> '));
+    for (const [rangeStart, rangeLength] of seedRanges) {
+      if (potentialSeedNum >= rangeStart && potentialSeedNum <= rangeStart + rangeLength) {
+        lowestLocation = testLocation;
+      }
+    }
 
-    const nextLocation = transformations.at(-1)!;
-    if (nextLocation < lowestLocation) {
-      lowestLocation = nextLocation;
+    testLocation++;
+  }
+
+  console.log('seedRanges', seedRanges);
+  for (const [nextStartingSeed, nextSeedRangeLength] of seedRanges) {
+    for (let nextSeedNum = nextStartingSeed; nextSeedNum < nextStartingSeed + nextSeedRangeLength; nextSeedNum++) {
+      const transformations: number[] = [nextSeedNum];
+      // const before = performance.now();
+      for (const nextMap of transformMaps) {
+        const lastVal = transformations.at(-1)!;
+        transformations.push(nextMap.mapVal(lastVal));
+      }
+      // const timeTaken = performance.now() - before;
+      // console.log(`${timeTaken}ms`);
+
+      // console.log(transformations.join(' -> '));
+
+      const nextLocation = transformations.at(-1)!;
+      if (nextLocation < lowestLocation) {
+        lowestLocation = nextLocation;
+      }
     }
   }
 
@@ -119,8 +131,8 @@ const runOne = () => {
     .map((line) => line.toLowerCase().trim())
     .filter((line) => line.length > 0);
 
-  const { seedNums, transformMaps } = parseLines(lines);
-  const lowestLocation = findLowestLocation(seedNums, transformMaps);
+  const { seedRanges, transformMaps } = parseLines(lines);
+  const lowestLocation = findLowestLocation(seedRanges, transformMaps);
 
   logAnswer(1, taskStarted, lowestLocation, USE_TEST_DATA ? 35 : 650_599_855);
 };
@@ -134,8 +146,8 @@ const runTwo = () => {
     .map((line) => line.toLowerCase().trim())
     .filter((line) => line.length > 0);
 
-  const { seedNums, transformMaps } = parseLines(lines, true);
-  const lowestLocation = findLowestLocation(seedNums, transformMaps);
+  const { seedRanges, transformMaps } = parseLines(lines, true);
+  const lowestLocation = findLowestLocation(seedRanges, transformMaps);
 
   logAnswer(2, taskStarted, lowestLocation, USE_TEST_DATA ? 46 : undefined);
 };

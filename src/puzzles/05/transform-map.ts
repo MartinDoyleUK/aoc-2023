@@ -36,6 +36,21 @@ export class TransformMap {
     return result ?? input;
   }
 
+  public mapValReverse(output: number) {
+    let input: number | undefined;
+    for (const { min, max, offset } of this.ranges) {
+      const outputLessOffset = output - offset;
+      if (outputLessOffset >= min && outputLessOffset <= max) {
+        input = outputLessOffset;
+      }
+      if (input !== undefined) {
+        break;
+      }
+    }
+
+    return input ?? output;
+  }
+
   public toJSON() {
     return this.ranges;
   }
