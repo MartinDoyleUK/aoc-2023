@@ -1,12 +1,12 @@
 type HandType = keyof typeof HAND_TYPE_SCORES;
 
-type CardName = keyof typeof CARD_RANKS;
+type CardName = keyof typeof CARD_RANKS_AS_HEX;
 
 /* eslint-disable canonical/sort-keys */
 const HAND_TYPE_SCORES = {
   HIGH_CARD: '1',
   ONE_PAIR: '2',
-  TWO_PAIR: '3',
+  TWO_PAIRS: '3',
   THREE_OF_A_KIND: '4',
   FULL_HOUSE: '5',
   FOUR_OF_A_KIND: '6',
@@ -15,7 +15,7 @@ const HAND_TYPE_SCORES = {
 /* eslint-enable canonical/sort-keys */
 
 /* eslint-disable canonical/sort-keys, id-length */
-const CARD_RANKS = {
+const CARD_RANKS_AS_HEX = {
   '2': '1',
   '3': '2',
   '4': '3',
@@ -41,19 +41,21 @@ export class Hand {
 
   private typeScore = 0;
 
-  private handCards = new Map<CardName, number>();
+  private handCardCounts = new Map<CardName, number>(
+    Object.keys(CARD_RANKS_AS_HEX).map((nextKey) => [nextKey as CardName, 0]),
+  );
 
   private useJokers: boolean;
 
-  public constructor(definition: string, useJokers = false) {
+  public constructor(definition: string, useJokers: boolean) {
     const [hand, rawBid] = definition.split(' ');
     this.hand = hand!;
     this.bid = Number.parseInt(rawBid!, 10);
     this.useJokers = useJokers;
 
     for (const nextCard of this.hand.split('')) {
-      const cardCount = this.handCards.get(nextCard as CardName) ?? 0;
-      this.handCards.set(nextCard as CardName, cardCount + 1);
+      const cardCount = this.handCardCounts.get(nextCard as CardName)!;
+      this.handCardCounts.set(nextCard as CardName, cardCount + 1);
     }
 
     this.calculateType();
@@ -61,22 +63,28 @@ export class Hand {
   }
 
   private calculateType() {
-    const nonJokers = new Map([...this.handCards.entries()].filter(([key]) => !this.useJokers || key !== 'J'));
-    const cardCounts = [...nonJokers.values()].sort();
-    const numJokers = this.useJokers ? this.handCards.get('J') ?? 0 : 0;
+    const numJokers = this.useJokers ? this.handCardCounts.get('J')! : 0;
+    const cardsWithoutJokers = [...this.handCardCounts.entries()].filter(([key]) => {
+      return !this.useJokers || key !== 'J';
+    });
+
+    const cardsToUse = new Map(cardsWithoutJokers);
+    const cardCounts = [...cardsToUse.values()].sort();
+    cardCounts.push(cardCounts.pop()! + numJokers);
+    const countsString = cardCounts.join('');
 
     let type: keyof typeof HAND_TYPE_SCORES;
-    if (cardCounts.at(-1)! + numJokers === 5) {
+    if (countsString.endsWith('5')) {
       type = 'FIVE_OF_A_KIND';
-    } else if (cardCounts.at(-1)! + numJokers === 4) {
+    } else if (countsString.endsWith('4')) {
       type = 'FOUR_OF_A_KIND';
-    } else if (cardCounts.at(-1)! + numJokers === 3 && cardCounts.at(-2) === 2) {
+    } else if (countsString.endsWith('23')) {
       type = 'FULL_HOUSE';
-    } else if (cardCounts.at(-1)! + numJokers === 3) {
+    } else if (countsString.endsWith('3')) {
       type = 'THREE_OF_A_KIND';
-    } else if (cardCounts.at(-1)! + numJokers === 2 && cardCounts.at(-2) === 2) {
-      type = 'TWO_PAIR';
-    } else if (cardCounts.at(-1)! + numJokers === 2) {
+    } else if (countsString.endsWith('22')) {
+      type = 'TWO_PAIRS';
+    } else if (countsString.endsWith('2')) {
       type = 'ONE_PAIR';
     } else {
       type = 'HIGH_CARD';
@@ -91,22 +99,15 @@ export class Hand {
       if (this.useJokers && nextChar === 'J') {
         return '0';
       }
-      return `${CARD_RANKS[nextChar as CardName]}`;
+      return `${CARD_RANKS_AS_HEX[nextChar as CardName]}`;
     });
     const rawScore = `${handScore}${cardScores}`;
     const typeScore = Number.parseInt(rawScore, 16);
-
-    // eslint-disable-next-line canonical/sort-keys
-    // console.log({ hand: this.hand, handScore, cardScores, rawScore, typeScore });
 
     this.typeScore = typeScore;
   }
 
   public compareTo(other: Hand): number {
     return this.typeScore - other.typeScore;
-  }
-
-  public toJSON() {
-    return `${this.hand} (${this.type}) => ${this.bid}`;
   }
 }
