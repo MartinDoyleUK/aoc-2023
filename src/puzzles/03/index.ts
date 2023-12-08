@@ -53,11 +53,20 @@ const parseData = (data: string) => {
 
   const storeNumber = (rowIdx: number) => {
     if (numberBuffer === undefined || numberCol === undefined) {
-      throw new Error(`Unable to store number (numberString=${numberBuffer}, numberCol=${numberCol})`);
+      throw new Error(
+        `Unable to store number (numberString=${numberBuffer}, numberCol=${numberCol})`,
+      );
     }
 
-    const numberEntry = { number: Number.parseInt(numberBuffer, 10), used: false };
-    for (let colIdx = numberCol; colIdx < numberCol + numberBuffer!.length; colIdx++) {
+    const numberEntry = {
+      number: Number.parseInt(numberBuffer, 10),
+      used: false,
+    };
+    for (
+      let colIdx = numberCol;
+      colIdx < numberCol + numberBuffer!.length;
+      colIdx++
+    ) {
       numbers.set(
         toPos({
           col: colIdx,
@@ -137,9 +146,17 @@ const runOne = () => {
     }
   }
 
-  const totalOfValidNumbers = numbersNextToSymbols.reduce((prev, next) => prev + next, 0);
+  const totalOfValidNumbers = numbersNextToSymbols.reduce(
+    (prev, next) => prev + next,
+    0,
+  );
 
-  logAnswer(1, taskStarted, totalOfValidNumbers, USE_TEST_DATA ? 4_361 : 528_799);
+  logAnswer(
+    1,
+    taskStarted,
+    totalOfValidNumbers,
+    USE_TEST_DATA ? 4_361 : 528_799,
+  );
 };
 
 // Run task two
@@ -161,7 +178,6 @@ const runTwo = () => {
     for (let col = symbolCol - 1; col <= symbolCol + 1; col++) {
       for (let row = symbolRow - 1; row <= symbolRow + 1; row++) {
         const nextNumberPos = toPos({ col, row });
-        // console.log(`Testing ${nextNumberPos} as it's next to a symbol`);
         const numberAtPos = numbers.get(nextNumberPos);
         if (numberAtPos?.used === false) {
           adjacentNumbers.push(numberAtPos);
@@ -185,7 +201,12 @@ const runTwo = () => {
 
   const totalOfGearRatios = gearRatios.reduce((prev, next) => prev + next, 0);
 
-  logAnswer(2, taskStarted, totalOfGearRatios, USE_TEST_DATA ? 467_835 : 84_907_174);
+  logAnswer(
+    2,
+    taskStarted,
+    totalOfGearRatios,
+    USE_TEST_DATA ? 467_835 : 84_907_174,
+  );
 };
 
 // Export a function to run both tasks

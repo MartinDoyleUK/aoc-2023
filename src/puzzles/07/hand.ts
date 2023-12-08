@@ -64,9 +64,11 @@ export class Hand {
 
   private calculateType() {
     const numJokers = this.useJokers ? this.handCardCounts.get('J')! : 0;
-    const cardsWithoutJokers = [...this.handCardCounts.entries()].filter(([key]) => {
-      return !this.useJokers || key !== 'J';
-    });
+    const cardsWithoutJokers = [...this.handCardCounts.entries()].filter(
+      ([key]) => {
+        return !this.useJokers || key !== 'J';
+      },
+    );
 
     const cardsToUse = new Map(cardsWithoutJokers);
     const cardCounts = [...cardsToUse.values()].sort();

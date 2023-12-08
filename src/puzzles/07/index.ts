@@ -43,7 +43,12 @@ const runOne = () => {
 
   const hands = lines.map((nextLine) => new Hand(nextLine, false));
 
-  logAnswer(1, taskStarted, getWinnings(hands), USE_TEST_DATA ? 6_440 : 253_638_586);
+  logAnswer(
+    1,
+    taskStarted,
+    getWinnings(hands),
+    USE_TEST_DATA ? 6_440 : 253_638_586,
+  );
 };
 
 // Run task two
@@ -54,7 +59,12 @@ const runTwo = () => {
 
   const hands = lines.map((nextLine) => new Hand(nextLine, true));
 
-  logAnswer(2, taskStarted, getWinnings(hands), USE_TEST_DATA ? 5_905 : 253_253_225);
+  logAnswer(
+    2,
+    taskStarted,
+    getWinnings(hands),
+    USE_TEST_DATA ? 5_905 : 253_253_225,
+  );
 };
 
 // Export a function to run both tasks

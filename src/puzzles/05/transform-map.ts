@@ -51,8 +51,13 @@ export class TransformMap {
     let inputRangeStart: number;
     let inputRangeEnd: number;
     let inputRangeLength: number;
-    // eslint-disable-next-line prefer-const
-    ({ lower: inputRangeStart, upper: inputRangeEnd, length: inputRangeLength } = input);
+    /* eslint-disable prefer-const */
+    ({
+      lower: inputRangeStart,
+      upper: inputRangeEnd,
+      length: inputRangeLength,
+    } = input);
+    /* eslint-enable prefer-const */
 
     // Setup output and create queue of ranges to run through
     const mappedRanges: Range[] = [];
@@ -87,7 +92,9 @@ export class TransformMap {
       }
 
       if (inputRangeEnd > max) {
-        mappedRanges.push(new Range(inputRangeStart + offset, max + 1 - inputRangeStart));
+        mappedRanges.push(
+          new Range(inputRangeStart + offset, max + 1 - inputRangeStart),
+        );
         inputRangeStart = max + 1;
         continue;
       }

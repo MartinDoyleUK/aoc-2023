@@ -42,7 +42,10 @@ export const consolidateRanges = (input: Range[]): Range[] => {
   let workingRange: Range | undefined;
   for (const nextRange of sortedRanges) {
     if (workingRange) {
-      if (nextRange.lower <= workingRange.upper || nextRange.lower === workingRange.upper + 1) {
+      if (
+        nextRange.lower <= workingRange.upper ||
+        nextRange.lower === workingRange.upper + 1
+      ) {
         workingRange.setNewUpper(nextRange.upper);
       } else {
         consolidatedRanges.push(workingRange);

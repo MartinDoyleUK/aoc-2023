@@ -77,7 +77,10 @@ const getGameResult: GetGameResultFn = (inputLine) => {
   }
 
   const gameNumber = Number.parseInt(gameId, 10);
-  const minCubesPower = Object.values(minCubes).reduce((prev, next) => prev * next, 1);
+  const minCubesPower = Object.values(minCubes).reduce(
+    (prev, next) => prev * next,
+    1,
+  );
 
   return {
     gameNumber,
@@ -94,15 +97,14 @@ const runOne = () => {
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
   const validGames = lines
-    .map((nextLine) => {
-      const result = getGameResult(nextLine);
-      // console.log(
-      //   `result for line "${nextLine}" = ${JSON.stringify(result, null, 2)}`,
-      // );
-      return result;
-    })
-    .filter((nextResult) => nextResult !== undefined && nextResult.isPossible) as GameResult[];
-  const totalOfValidGames = validGames.reduce((prev, next) => prev + next!.gameNumber, 0);
+    .map((nextLine) => getGameResult(nextLine))
+    .filter(
+      (nextResult) => nextResult !== undefined && nextResult.isPossible,
+    ) as GameResult[];
+  const totalOfValidGames = validGames.reduce(
+    (prev, next) => prev + next!.gameNumber,
+    0,
+  );
 
   logAnswer(1, taskStarted, totalOfValidGames, USE_TEST_DATA ? 8 : 2_486);
 };
@@ -114,16 +116,13 @@ const runTwo = () => {
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
   const gameResults = lines
-    .map((nextLine) => {
-      const result = getGameResult(nextLine);
-      // console.log(
-      //   `result for line "${nextLine}" = ${JSON.stringify(result, null, 2)}`,
-      // );
-      return result;
-    })
+    .map((nextLine) => getGameResult(nextLine))
     .filter((nextResult) => nextResult !== undefined) as GameResult[];
 
-  const totalOfCubePowers = gameResults.reduce((prev, next) => prev + next!.minCubesPower, 0);
+  const totalOfCubePowers = gameResults.reduce(
+    (prev, next) => prev + next!.minCubesPower,
+    0,
+  );
 
   logAnswer(2, taskStarted, totalOfCubePowers, USE_TEST_DATA ? 2_286 : 87_984);
 };

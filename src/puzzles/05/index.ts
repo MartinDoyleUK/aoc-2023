@@ -41,7 +41,9 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
     let match: RegExpExecArray | null;
     if ((match = REGEX.Seeds.exec(nextLine))) {
       const [, seedNums] = match;
-      const mappedSeedNums = seedNums!.split(' ').map((nextSeed) => Number.parseInt(nextSeed, 10));
+      const mappedSeedNums = seedNums!
+        .split(' ')
+        .map((nextSeed) => Number.parseInt(nextSeed, 10));
       if (seedNumsAreRange) {
         while (mappedSeedNums.length > 0) {
           const start = mappedSeedNums.shift()!;
@@ -49,7 +51,9 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
           seedRanges.push(new Range(start, length));
         }
       } else {
-        seedRanges.push(...mappedSeedNums.map((nextSeed) => new Range(nextSeed, 1)));
+        seedRanges.push(
+          ...mappedSeedNums.map((nextSeed) => new Range(nextSeed, 1)),
+        );
       }
     } else if ((match = REGEX.MapTitle.exec(nextLine))) {
       const [, source, dest] = match;
@@ -58,12 +62,9 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
       }
       nextTransformMap = new TransformMap(source!, dest!);
     } else if ((match = REGEX.MappingInfo.exec(nextLine))) {
-      const [, destStart, sourceStart, rangeLength] = match.map((nextVal) => Number.parseInt(nextVal!, 10)) as [
-        unknown,
-        number,
-        number,
-        number,
-      ];
+      const [, destStart, sourceStart, rangeLength] = match.map((nextVal) =>
+        Number.parseInt(nextVal!, 10),
+      ) as [unknown, number, number, number];
       nextTransformMap!.addRange(destStart, sourceStart, rangeLength);
     } else {
       throw new Error(`Line did not match any expected format: "${nextLine}"`);
@@ -79,8 +80,13 @@ const parseLines = (lines: string[], seedNumsAreRange = false) => {
   };
 };
 
-const findLowestLocation = (seedRanges: Range[], transformMaps: TransformMap[]) => {
-  let nextRangesToMap: Range[] = seedRanges.slice().sort((a, b) => a.lower - b.lower);
+const findLowestLocation = (
+  seedRanges: Range[],
+  transformMaps: TransformMap[],
+) => {
+  let nextRangesToMap: Range[] = seedRanges
+    .slice()
+    .sort((a, b) => a.lower - b.lower);
   let mappedRanges: Range[] = [];
 
   for (const nextMap of transformMaps) {

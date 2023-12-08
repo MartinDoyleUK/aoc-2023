@@ -5,9 +5,16 @@ import url from 'node:url';
 
 import { logAnswer } from '../../utils';
 
-type CheckForDigitFn = (opts: { includeWords: boolean; input: string; pos: number }) => string | undefined;
+type CheckForDigitFn = (opts: {
+  includeWords: boolean;
+  input: string;
+  pos: number;
+}) => string | undefined;
 
-type GetNumberForLineFn = (opts: { includeWords: boolean; line: string }) => number;
+type GetNumberForLineFn = (opts: {
+  includeWords: boolean;
+  line: string;
+}) => number;
 
 // Toggle this to use test or real data
 const USE_TEST_DATA = false;
@@ -40,7 +47,10 @@ const STRING_VALUES = {
   nine: '9',
 };
 /* eslint-enable canonical/sort-keys */
-const REGEX_NUMBER = new RegExp(`^(${Object.keys(STRING_VALUES).join('|')}|\\d)`, 'u');
+const REGEX_NUMBER = new RegExp(
+  `^(${Object.keys(STRING_VALUES).join('|')}|\\d)`,
+  'u',
+);
 // eslint-disable-next-line unicorn/no-array-reduce
 const LONGEST_NUMBER_STRING = Object.keys(STRING_VALUES).reduce(
   (prev, next) => (next.length > prev ? next.length : prev),
@@ -60,8 +70,6 @@ const checkForDigit: CheckForDigitFn = ({ input, pos, includeWords }) => {
       digit = STRING_VALUES[number as keyof typeof STRING_VALUES];
     }
   }
-
-  // console.log(`Checking for digit at position ${pos} in input ${input} (window: "${nextWindow}") - found ${digit}`);
 
   return digit;
 };
@@ -84,9 +92,7 @@ const getNumberForLine: GetNumberForLineFn = ({ includeWords, line }) => {
     throw new Error(`Could not find first and last digits for line ${line}`);
   }
 
-  const lineValue = Number.parseInt(firstDigit + lastDigit, 10);
-  // console.log(`Line ${line} has value ${lineValue}`);
-  return lineValue;
+  return Number.parseInt(firstDigit + lastDigit, 10);
 };
 
 // Run task one

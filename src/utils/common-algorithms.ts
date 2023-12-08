@@ -4,7 +4,9 @@ interface FindTransitionByIndexArgs {
   upper: number;
 }
 
-type FindTransitionByIndexFn = (args: FindTransitionByIndexArgs) => number | undefined;
+type FindTransitionByIndexFn = (
+  args: FindTransitionByIndexArgs,
+) => number | undefined;
 
 /**
  * Find the mid-point of a range, i.e. the next candidate for a binary search
@@ -57,7 +59,11 @@ export const findTransitionPoint = (arr: (0 | 1)[], length: number) => {
  * @param {string} arg.predicate - A function that takes an index and returns false before the transition point and true after it
  * @returns {number} The first index for which the predicate returns true or undefined if there's no transition found
  */
-export const findTransitionByIndex: FindTransitionByIndexFn = ({ lower, upper, predicate }) => {
+export const findTransitionByIndex: FindTransitionByIndexFn = ({
+  lower,
+  upper,
+  predicate,
+}) => {
   let start = lower;
   let end = upper;
 

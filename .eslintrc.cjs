@@ -83,7 +83,7 @@ module.exports = {
             bracketSameLine: false,
             bracketSpacing: true,
             endOfLine: 'lf',
-            printWidth: 120,
+            printWidth: 80,
             proseWrap: 'preserve',
             quoteProps: 'as-needed',
             semi: true,

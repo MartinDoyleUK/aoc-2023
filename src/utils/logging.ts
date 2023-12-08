@@ -14,7 +14,12 @@ Day ${day}`),
   );
 };
 
-export const logAnswer = (part: PartNumber, taskStarted: number, answer: unknown, expectedParam?: unknown) => {
+export const logAnswer = (
+  part: PartNumber,
+  taskStarted: number,
+  answer: unknown,
+  expectedParam?: unknown,
+) => {
   const timeTaken = timeSinceStarted(taskStarted);
   const partText = `Part ${part} took ${timeTaken}`;
   let answerText: string;
@@ -44,11 +49,17 @@ export const logAnswer = (part: PartNumber, taskStarted: number, answer: unknown
     answerText += colourFn(
       isExpected
         ? ' (matches expected value)'
-        : ` (does not match expected value of ${JSON.stringify(expectedDisplayValue)})`,
+        : ` (does not match expected value of ${JSON.stringify(
+            expectedDisplayValue,
+          )})`,
     );
   }
 
-  const messageParts = [chalk.bold.cyan(partText), '➡️ ', chalk.bold.yellow(answerText)];
+  const messageParts = [
+    chalk.bold.cyan(partText),
+    '➡️ ',
+    chalk.bold.yellow(answerText),
+  ];
   console.info(messageParts.join(' '));
 };
 

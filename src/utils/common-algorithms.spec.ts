@@ -29,12 +29,21 @@ describe('findTransitionByIndex()', () => {
   const testCases = [
     ['should find the transition point in an odd range', 1, 3, 2],
     ['should find the transition point in an even range', 1, 4, 3],
-    ['should find the transition point where the candidate jumps the transition point', 1, 100, 74],
+    [
+      'should find the transition point where the candidate jumps the transition point',
+      1,
+      100,
+      74,
+    ],
   ];
 
   it.each(testCases)('%s', (_, lower, upper, expected) => {
     const predicate = (input: number) => input >= (expected as number);
-    const actual = findTransitionByIndex({ lower: lower as number, predicate, upper: upper as number });
+    const actual = findTransitionByIndex({
+      lower: lower as number,
+      predicate,
+      upper: upper as number,
+    });
     expect(actual).toBe(expected as number);
   });
 

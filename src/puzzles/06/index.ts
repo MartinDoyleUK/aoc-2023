@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 
-import { findTransitionByIndex, getBinaryCandidate, logAnswer } from '../../utils';
+import {
+  findTransitionByIndex,
+  getBinaryCandidate,
+  logAnswer,
+} from '../../utils';
 
 interface FindSuccessCandidateArgs {
   lower: number;
@@ -40,7 +44,11 @@ const getDistanceForTime = (press: number, race: number) => {
   return travelDistance;
 };
 
-const findSuccessfulRange: FindSuccessCandidateFn = ({ lower, upper, predicate }) => {
+const findSuccessfulRange: FindSuccessCandidateFn = ({
+  lower,
+  upper,
+  predicate,
+}) => {
   let firstSuccessful: number | undefined;
   let candidate = getBinaryCandidate(lower, upper);
   let up = true;
@@ -54,12 +62,22 @@ const findSuccessfulRange: FindSuccessCandidateFn = ({ lower, upper, predicate }
       break;
     }
 
-    candidate = up ? getBinaryCandidate(candidate, upper) : getBinaryCandidate(candidate, lower);
+    candidate = up
+      ? getBinaryCandidate(candidate, upper)
+      : getBinaryCandidate(candidate, lower);
   }
 
   const reversePredicate = (input: number) => !predicate(input);
-  const startOfSuccess = findTransitionByIndex({ lower, predicate, upper: candidate });
-  const startOfFailure = findTransitionByIndex({ lower: candidate, predicate: reversePredicate, upper });
+  const startOfSuccess = findTransitionByIndex({
+    lower,
+    predicate,
+    upper: candidate,
+  });
+  const startOfFailure = findTransitionByIndex({
+    lower: candidate,
+    predicate: reversePredicate,
+    upper,
+  });
 
   return { highest: startOfFailure! - 1, lowest: startOfSuccess! };
 };
@@ -84,7 +102,8 @@ const runOne = () => {
 
     const { highest, lowest } = findSuccessfulRange({
       lower: 0,
-      predicate: (input) => getDistanceForTime(input, nextRaceTime) > nextRecordDistance,
+      predicate: (input) =>
+        getDistanceForTime(input, nextRaceTime) > nextRecordDistance,
       upper: nextRaceTime,
     });
 
@@ -92,7 +111,10 @@ const runOne = () => {
     winningOptionsPerRace.push(numWinningTimes);
   }
 
-  const marginForError = winningOptionsPerRace.reduce((prev, next) => prev * next, 1);
+  const marginForError = winningOptionsPerRace.reduce(
+    (prev, next) => prev * next,
+    1,
+  );
 
   logAnswer(1, taskStarted, marginForError, USE_TEST_DATA ? 288 : undefined);
 };
@@ -119,7 +141,12 @@ const runTwo = () => {
 
   const numWinningTimes = highest - lowest + 1;
 
-  logAnswer(2, taskStarted, numWinningTimes, USE_TEST_DATA ? 71_503 : 20_048_741);
+  logAnswer(
+    2,
+    taskStarted,
+    numWinningTimes,
+    USE_TEST_DATA ? 71_503 : 20_048_741,
+  );
 };
 
 // Export a function to run both tasks

@@ -53,10 +53,8 @@ const runOne = () => {
       .trim()
       .split(' ')
       .filter((myNextNum) => winners.has(myNextNum));
+
     const cardPoints = myWinners.length === 0 ? 0 : 2 ** (myWinners.length - 1);
-
-    // console.log({ cardPoints, myNums, myWinners, winners, winningNums });
-
     totalPoints += cardPoints;
   }
 
@@ -89,7 +87,9 @@ const runTwo = () => {
   for (const [cardNum, card] of scratchCardsMap.entries()) {
     totalScratchcards += card.toRead;
 
-    const myWinners = card.myNumbers.filter((nextNum) => card.winners.has(nextNum));
+    const myWinners = card.myNumbers.filter((nextNum) =>
+      card.winners.has(nextNum),
+    );
     const numMatches = myWinners.length;
     for (let i = 0; i < numMatches; i++) {
       scratchCardsMap.get(cardNum + i + 1)!.toRead += card.toRead;
