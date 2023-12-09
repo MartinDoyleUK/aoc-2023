@@ -24,17 +24,18 @@ const DATA = {
 
 const findSteps = (input: number[]): { allSame: boolean; steps: number[] } => {
   let allSame = true;
-  const inputClone = input.slice();
   const steps: number[] = [];
 
-  let nextVal: number | undefined;
-  let prevVal = inputClone.shift()!;
-  while ((nextVal = inputClone.shift()) !== undefined) {
-    const nextInterval = nextVal - prevVal;
-    steps.push(nextInterval);
-    if (nextInterval !== steps[0]) {
-      allSame = false;
+  let prevVal: number | undefined;
+  for (const nextVal of input) {
+    if (prevVal !== undefined) {
+      const nextInterval = nextVal - prevVal;
+      steps.push(nextInterval);
+      if (allSame && nextInterval !== steps[0]) {
+        allSame = false;
+      }
     }
+
     prevVal = nextVal;
   }
 
@@ -43,8 +44,16 @@ const findSteps = (input: number[]): { allSame: boolean; steps: number[] } => {
 
 const extrapolateValues = (input: number[]): [number, number] => {
   const { steps, allSame } = findSteps(input);
-  const nextStep = allSame ? steps.at(-1)! : extrapolateValues(steps)[1];
-  const prevStep = allSame ? steps.at(0)! : extrapolateValues(steps)[0];
+
+  let nextStep: number | undefined;
+  let prevStep: number | undefined;
+  if (allSame) {
+    nextStep = steps.at(-1)!;
+    prevStep = steps.at(0)!;
+  } else {
+    [prevStep, nextStep] = extrapolateValues(steps);
+  }
+
   const nextVal = nextStep + input.at(-1)!;
   const prevVal = input.at(0)! - prevStep;
 
