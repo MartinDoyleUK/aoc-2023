@@ -62,7 +62,7 @@ const extrapolateValues = (input: number[]): [number, number] => {
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -76,12 +76,17 @@ const runOne = () => {
     total += nextVal;
   }
 
-  logAnswer(1, taskStarted, total, USE_TEST_DATA ? 114 : 1_938_800_261);
+  logAnswer({
+    answer: total,
+    expected: USE_TEST_DATA ? 114 : 1_938_800_261,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -95,7 +100,12 @@ const runTwo = () => {
     total += prevVal;
   }
 
-  logAnswer(2, taskStarted, total, USE_TEST_DATA ? 2 : 1_112);
+  logAnswer({
+    answer: total,
+    expected: USE_TEST_DATA ? 2 : 1_112,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

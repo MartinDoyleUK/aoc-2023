@@ -1,27 +1,41 @@
+/* eslint-disable import/no-named-as-default-member */
 import chalk from 'chalk';
+import _ from 'lodash';
+import numberToWords from 'number-to-words';
 
 import { NUMBER_FORMATTER, timeSinceStarted } from './formatters';
+
+type LogAnswerFn = (args: {
+  answer: unknown;
+  expected?: unknown;
+  partNum: PartNumber;
+  taskStartedAt: number;
+}) => void;
 
 type PartNumber = 1 | 2;
 
 export const logPuzzleDay = (day: string, isFirst = true) => {
+  const dayWords = numberToWords.toWordsOrdinal(day);
+
   if (!isFirst) {
     console.info('');
   }
   console.info(
     chalk.bold.green(`
-Day ${day}`),
+Running ${dayWords} day of Advent of Code ...`),
   );
 };
 
-export const logAnswer = (
-  part: PartNumber,
-  taskStarted: number,
-  answer: unknown,
-  expectedParam?: unknown,
-) => {
-  const timeTaken = timeSinceStarted(taskStarted);
-  const partText = `Part ${part} took ${timeTaken}`;
+export const logAnswer: LogAnswerFn = ({
+  partNum,
+  taskStartedAt,
+  answer,
+  expected: expectedParam,
+}) => {
+  const timeTaken = timeSinceStarted(taskStartedAt);
+  const partText = `${_.capitalize(
+    numberToWords.toWordsOrdinal(partNum),
+  )} part took ${timeTaken}`;
   let answerText: string;
   if (typeof answer === 'number') {
     const formatted = NUMBER_FORMATTER.format(answer);
@@ -45,13 +59,11 @@ export const logAnswer = (
       expectedDisplayValue = 'verify-function result';
     }
 
-    const colourFn = isExpected ? chalk.green : chalk.red;
+    const colourFn = isExpected ? chalk.reset.green : chalk.reset.red;
     answerText += colourFn(
       isExpected
-        ? ' (matches expected value)'
-        : ` (does not match expected value of ${JSON.stringify(
-            expectedDisplayValue,
-          )})`,
+        ? ' ✅'
+        : ` ❌ (should match ${JSON.stringify(expectedDisplayValue)})`,
     );
   }
 
@@ -63,9 +75,15 @@ export const logAnswer = (
   console.info(messageParts.join(' '));
 };
 
-export const logTime = (before: number) => {
+export const logTime = (before: number, dayString: string) => {
   const timeTaken = timeSinceStarted(before);
-  console.info(chalk.green(`Took ${timeTaken} to run all tasks for day`));
+  console.info(
+    chalk.green(
+      `Took ${timeTaken} to run all tasks for day ${numberToWords.toWords(
+        dayString,
+      )}`,
+    ),
+  );
 };
 
 export const logComplete = (before: number) => {

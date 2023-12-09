@@ -27,7 +27,7 @@ const REGEX_FORK_DEF = /^(.{3}) = \((.{3}), (.{3})\)$/u;
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -55,12 +55,17 @@ const runOne = () => {
     }
   }
 
-  logAnswer(1, taskStarted, stepCounter, USE_TEST_DATA ? 6 : 19_241);
+  logAnswer({
+    answer: stepCounter,
+    expected: USE_TEST_DATA ? 6 : 19_241,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -108,7 +113,12 @@ const runTwo = () => {
 
   const numSteps = getLowestCommonMultiple(endingSteps);
 
-  logAnswer(2, taskStarted, numSteps, USE_TEST_DATA ? 6 : 9_606_140_307_013);
+  logAnswer({
+    answer: numSteps,
+    expected: USE_TEST_DATA ? 6 : 9_606_140_307_013,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

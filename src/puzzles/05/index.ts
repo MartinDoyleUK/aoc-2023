@@ -111,7 +111,7 @@ const findLowestLocation = (
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -121,12 +121,17 @@ const runOne = () => {
   const { seedRanges, transformMaps } = parseLines(lines);
   const lowestLocation = findLowestLocation(seedRanges, transformMaps);
 
-  logAnswer(1, taskStarted, lowestLocation, USE_TEST_DATA ? 35 : 650_599_855);
+  logAnswer({
+    answer: lowestLocation,
+    expected: USE_TEST_DATA ? 35 : 650_599_855,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -136,7 +141,12 @@ const runTwo = () => {
   const { seedRanges, transformMaps } = parseLines(lines, true);
   const lowestLocation = findLowestLocation(seedRanges, transformMaps);
 
-  logAnswer(2, taskStarted, lowestLocation, USE_TEST_DATA ? 46 : 1_240_035);
+  logAnswer({
+    answer: lowestLocation,
+    expected: USE_TEST_DATA ? 46 : 1_240_035,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

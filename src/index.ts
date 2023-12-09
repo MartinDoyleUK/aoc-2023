@@ -52,7 +52,7 @@ const run = async () => {
     logPuzzleDay(day!, index === startIndex);
     const before = performance.now();
     await runTasks();
-    logTime(before);
+    logTime(before, day!);
   }
 
   // Finish up with nice message

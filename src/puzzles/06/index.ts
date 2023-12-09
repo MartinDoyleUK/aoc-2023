@@ -84,7 +84,7 @@ const findSuccessfulRange: FindSuccessCandidateFn = ({
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -116,12 +116,17 @@ const runOne = () => {
     1,
   );
 
-  logAnswer(1, taskStarted, marginForError, USE_TEST_DATA ? 288 : undefined);
+  logAnswer({
+    answer: marginForError,
+    expected: USE_TEST_DATA ? 288 : 633_080,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -141,12 +146,12 @@ const runTwo = () => {
 
   const numWinningTimes = highest - lowest + 1;
 
-  logAnswer(
-    2,
-    taskStarted,
-    numWinningTimes,
-    USE_TEST_DATA ? 71_503 : 20_048_741,
-  );
+  logAnswer({
+    answer: numWinningTimes,
+    expected: USE_TEST_DATA ? 71_503 : 20_048_741,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

@@ -37,34 +37,34 @@ const getWinnings = (hands: Hand[]): number => {
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
   const hands = lines.map((nextLine) => new Hand(nextLine, false));
 
-  logAnswer(
-    1,
-    taskStarted,
-    getWinnings(hands),
-    USE_TEST_DATA ? 6_440 : 253_638_586,
-  );
+  logAnswer({
+    answer: getWinnings(hands),
+    expected: USE_TEST_DATA ? 6_440 : 253_638_586,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
   const hands = lines.map((nextLine) => new Hand(nextLine, true));
 
-  logAnswer(
-    2,
-    taskStarted,
-    getWinnings(hands),
-    USE_TEST_DATA ? 5_905 : 253_253_225,
-  );
+  logAnswer({
+    answer: getWinnings(hands),
+    expected: USE_TEST_DATA ? 5_905 : 253_253_225,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

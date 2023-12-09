@@ -1,4 +1,4 @@
-const findGreatestCommonDenominator = (
+export const findGreatestCommonDenominator = (
   firstNum: number,
   secondNum: number,
 ): number => {
@@ -9,7 +9,7 @@ const findGreatestCommonDenominator = (
   return findGreatestCommonDenominator(secondNum, firstNum % secondNum);
 };
 
-const getLowestCommonMultipleOfTwoNumbers = (
+export const getLowestCommonMultipleOfTwoNumbers = (
   firstNum: number,
   secondNum: number,
 ) =>

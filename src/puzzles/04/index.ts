@@ -37,7 +37,7 @@ const toNumArray = (input: string) => {
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -58,12 +58,17 @@ const runOne = () => {
     totalPoints += cardPoints;
   }
 
-  logAnswer(1, taskStarted, totalPoints, USE_TEST_DATA ? 13 : 23_847);
+  logAnswer({
+    answer: totalPoints,
+    expected: USE_TEST_DATA ? 13 : 23_847,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse
     .split('\n')
@@ -96,7 +101,12 @@ const runTwo = () => {
     }
   }
 
-  logAnswer(2, taskStarted, totalScratchcards, USE_TEST_DATA ? 30 : 8_570_000);
+  logAnswer({
+    answer: totalScratchcards,
+    expected: USE_TEST_DATA ? 30 : 8_570_000,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks

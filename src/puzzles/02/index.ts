@@ -92,7 +92,7 @@ const getGameResult: GetGameResultFn = (inputLine) => {
 
 // Run task one
 const runOne = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -106,12 +106,17 @@ const runOne = () => {
     0,
   );
 
-  logAnswer(1, taskStarted, totalOfValidGames, USE_TEST_DATA ? 8 : 2_486);
+  logAnswer({
+    answer: totalOfValidGames,
+    expected: USE_TEST_DATA ? 8 : 2_486,
+    partNum: 1,
+    taskStartedAt,
+  });
 };
 
 // Run task two
 const runTwo = () => {
-  const taskStarted = performance.now();
+  const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
@@ -124,7 +129,12 @@ const runTwo = () => {
     0,
   );
 
-  logAnswer(2, taskStarted, totalOfCubePowers, USE_TEST_DATA ? 2_286 : 87_984);
+  logAnswer({
+    answer: totalOfCubePowers,
+    expected: USE_TEST_DATA ? 2_286 : 87_984,
+    partNum: 2,
+    taskStartedAt,
+  });
 };
 
 // Export a function to run both tasks
