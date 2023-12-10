@@ -63,7 +63,7 @@ export const logAnswer: LogAnswerFn = ({
     answerText += colourFn(
       isExpected
         ? ' ✅'
-        : ` ❌ (should match ${JSON.stringify(expectedDisplayValue)})`,
+        : ` ❌ (should equal ${JSON.stringify(expectedDisplayValue)})`,
     );
   }
 
