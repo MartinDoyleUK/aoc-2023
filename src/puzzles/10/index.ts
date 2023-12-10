@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /* eslint-disable unicorn/no-for-loop, @typescript-eslint/prefer-for-of, id-length */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,10 +8,14 @@ import { logAnswer } from '../../utils';
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 
-interface Step {
+interface Square {
   col: number;
-  fromPrev: Direction;
+  entry?: string;
   row: number;
+}
+
+interface Step extends Square {
+  fromPrev: Direction;
 }
 
 // Toggle this to use test or real data
@@ -63,74 +68,108 @@ const getNextDir = (toDir: Direction, entry: string): Direction => {
   return map![entry] as Direction;
 };
 
-// Run task one
-// eslint-disable-next-line complexity
-const runOne = () => {
-  const taskStartedAt = performance.now();
-  const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
-  const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
+const getSquareId = ({ col, row }: Square): string => {
+  return `${col},${row}`;
+};
 
-  // Get starting position
-  const startingPos = { col: 0, row: 0 };
+const getStartingSquare = (lines: string[]): Square => {
+  let startingCol = 0;
+  let startingRow = 0;
+
   for (let rowIdx = 0; rowIdx < lines.length; rowIdx++) {
     for (let colIdx = 0; colIdx < lines[rowIdx]!.length; colIdx++) {
-      if (lines[rowIdx]![colIdx] === 'S') {
-        startingPos.col = colIdx;
-        startingPos.row = rowIdx;
+      const entry = lines[rowIdx]![colIdx];
+      if (entry === 'S') {
+        startingCol = colIdx;
+        startingRow = rowIdx;
       }
     }
   }
 
-  // Find first step
-  const { col: startCol, row: startRow } = startingPos;
-  let firstStep: Step;
-  if (startRow > 0 && ['F', '7'].includes(lines[startRow - 1]![startCol]!)) {
-    firstStep = {
-      col: startCol,
-      fromPrev: 'up',
-      row: startRow - 1,
-    };
-  } else if (
+  return { col: startingCol, row: startingRow };
+};
+
+const calculateStartingEntry = ({
+  lines,
+  startingSquare,
+}: {
+  lines: string[];
+  startingSquare: Square;
+}): string => {
+  const { col: startCol, row: startRow } = startingSquare;
+  const startingDirs: Direction[] = [];
+  if (
+    startRow > 0 &&
+    ['F', '7', '|'].includes(lines[startRow - 1]![startCol]!)
+  ) {
+    startingDirs.push('up');
+  }
+  if (
     startCol > 0 &&
-    ['F', 'L'].includes(lines[startRow]![startCol - 1]!)
+    ['F', 'L', '-'].includes(lines[startRow]![startCol - 1]!)
   ) {
-    firstStep = {
-      col: startCol - 1,
-      fromPrev: 'left',
-      row: startRow,
-    };
-  } else if (
+    startingDirs.push('left');
+  }
+  if (
     startRow < lines.length - 1 &&
-    ['J', 'L'].includes(lines[startRow + 1]![startCol]!)
+    ['J', 'L', '|'].includes(lines[startRow + 1]![startCol]!)
   ) {
-    firstStep = {
-      col: startCol,
-      fromPrev: 'down',
-      row: startRow + 1,
-    };
-  } else if (
+    startingDirs.push('down');
+  }
+  if (
     startCol < lines[0]!.length - 1 &&
-    ['J', '7'].includes(lines[startRow]![startCol + 1]!)
+    ['J', '7', '-'].includes(lines[startRow]![startCol + 1]!)
   ) {
-    firstStep = {
-      col: startCol + 1,
-      fromPrev: 'right',
-      row: startRow,
-    };
+    startingDirs.push('right');
   }
 
-  let totalSteps = 0;
+  const [firstDir, secondDir] = startingDirs.sort() as [Direction, Direction];
+  const startingEntryLookup: Record<string, string> = {
+    down_left: '7',
+    down_right: 'F',
+    down_up: '|',
+    left_right: '-',
+    left_up: 'J',
+    right_up: 'L',
+  };
+
+  return startingEntryLookup[`${firstDir}_${secondDir}`]!;
+};
+
+const getPipeSquares = ({
+  lines,
+  startingSquare: { col: startCol, row: startRow, entry: startEntry },
+}: {
+  lines: string[];
+  startingSquare: Square;
+}): Set<string> => {
+  const pipeSquareId = new Set<string>();
+
+  const firstStep: Step = { col: 0, fromPrev: 'up', row: 0 };
+  if (['J', '7'].includes(startEntry!)) {
+    firstStep.col = startCol + 1;
+    firstStep.row = startRow;
+    firstStep.fromPrev = 'right';
+  } else if (startEntry === '|') {
+    firstStep.col = startCol;
+    firstStep.row = startRow + 1;
+    firstStep.fromPrev = 'down';
+  } else {
+    firstStep.col = startCol - 1;
+    firstStep.row = startRow;
+    firstStep.fromPrev = 'left';
+  }
+
   let nextStep = firstStep!;
   while (true) {
+    pipeSquareId.add(getSquareId(nextStep));
     const { col, row, fromPrev } = nextStep;
     if (col === startCol && row === startRow) {
       break;
     }
 
-    totalSteps++;
     const thisEntry = lines[row]![col]!;
     const nextDir = getNextDir(fromPrev, thisEntry);
-
     nextStep = {
       col: nextDir === 'left' ? col - 1 : nextDir === 'right' ? col + 1 : col,
       fromPrev: nextDir,
@@ -138,8 +177,78 @@ const runOne = () => {
     };
   }
 
+  return pipeSquareId;
+};
+
+const getIntersections = ({
+  square: { col, row },
+  lines,
+  pipeSquareIds,
+}: {
+  lines: string[];
+  pipeSquareIds: Set<string>;
+  square: Square;
+}): number => {
+  let intersections = 0;
+  let ups = 0;
+  let downs = 0;
+  let nextCol = col - 1;
+
+  while (nextCol >= 0) {
+    const nextSquare: Square = {
+      col: nextCol,
+      entry: lines[row]![nextCol]!,
+      row,
+    };
+    const nextSquareId = getSquareId(nextSquare);
+    if (pipeSquareIds.has(nextSquareId)) {
+      switch (nextSquare.entry) {
+        case '|':
+          intersections++;
+          break;
+        case 'L':
+        case 'J':
+          ups++;
+          break;
+        case '7':
+        case 'F':
+          downs++;
+          break;
+        default:
+        // Do nothing
+      }
+    }
+    nextCol--;
+  }
+
+  const numSame = Math.min(downs, ups);
+  intersections += numSame;
+
+  return intersections;
+};
+
+// Run task one
+const runOne = () => {
+  const taskStartedAt = performance.now();
+  const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
+  const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
+
+  // Get starting position and its entry
+  const startingSquare = getStartingSquare(lines);
+  startingSquare.entry = calculateStartingEntry({ lines, startingSquare });
+
+  // Replace starting char
+  const startingLine = lines[startingSquare.row]!;
+  const startingLineChars = startingLine.split('');
+  startingLineChars.splice(startingSquare.col, 1, startingSquare.entry);
+  const updatedLine = startingLineChars.join('');
+  lines[startingSquare.row] = updatedLine;
+
+  // Get all pipes
+  const pipeSquareIds = getPipeSquares({ lines, startingSquare });
+
   logAnswer({
-    answer: Math.ceil(totalSteps / 2),
+    answer: Math.ceil(pipeSquareIds.size / 2),
     expected: USE_TEST_DATA ? 8 : 6_820,
     partNum: 1,
     taskStartedAt,
@@ -152,9 +261,42 @@ const runTwo = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
+  // Get starting position and its entry
+  const startingSquare = getStartingSquare(lines);
+  startingSquare.entry = calculateStartingEntry({ lines, startingSquare });
+
+  // Replace starting char
+  const startingLine = lines[startingSquare.row]!;
+  const startingLineChars = startingLine.split('');
+  startingLineChars.splice(startingSquare.col, 1, startingSquare.entry);
+  const updatedLine = startingLineChars.join('');
+  lines[startingSquare.row] = updatedLine;
+
+  // Get all pipes
+  const pipeSquareIds = getPipeSquares({ lines, startingSquare });
+
+  // Calculate left-intersections with polygon (ray-casting algorithm)
+  const insideSquares: Square[] = [];
+  for (let row = 0; row < lines.length; row++) {
+    for (let col = 0; col < lines[0]!.length; col++) {
+      const nextSquare: Square = { col, entry: lines[row]![col], row };
+      if (pipeSquareIds.has(getSquareId(nextSquare))) {
+        continue;
+      }
+      const numIntersections = getIntersections({
+        lines,
+        pipeSquareIds,
+        square: nextSquare,
+      });
+      if (numIntersections % 2 === 1) {
+        insideSquares.push(nextSquare);
+      }
+    }
+  }
+
   logAnswer({
-    answer: lines.length,
-    expected: USE_TEST_DATA ? undefined : undefined,
+    answer: insideSquares.length,
+    expected: USE_TEST_DATA ? 10 : 337,
     partNum: 2,
     taskStartedAt,
   });
