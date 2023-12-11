@@ -183,10 +183,14 @@ module.exports = {
 
     // These clash with the above import/order rule
     'simple-import-sort/exports': OFF,
+
     'simple-import-sort/imports': OFF,
 
     // Disable strict control of error argument name in catch clauses
     'unicorn/catch-error-name': OFF,
+
+    // For loops are used a lot in Advent of Code!
+    'unicorn/no-for-loop': OFF,
 
     // Disable strict control of certain argument names
     'unicorn/prevent-abbreviations': OFF,

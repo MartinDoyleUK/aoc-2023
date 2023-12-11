@@ -1,5 +1,5 @@
 /* eslint-disable complexity */
-/* eslint-disable unicorn/no-for-loop, @typescript-eslint/prefer-for-of, id-length */
+/* eslint-disable @typescript-eslint/prefer-for-of, id-length */
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';

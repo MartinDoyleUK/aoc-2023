@@ -95,7 +95,6 @@ const runOne = () => {
   const [, ...rawDistances] = lines[1]!.split(' ');
 
   const winningOptionsPerRace: number[] = [];
-  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < rawTimes.length; i++) {
     const nextRaceTime = Number.parseInt(rawTimes[i]!, 10);
     const nextRecordDistance = Number.parseInt(rawDistances[i]!, 10);
