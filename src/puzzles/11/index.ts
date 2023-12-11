@@ -6,7 +6,7 @@ import url from 'node:url';
 import { logAnswer } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = false;
+const USE_TEST_DATA = true;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -22,58 +22,90 @@ const DATA = {
   TEST2: fs.readFileSync(PATHS.TEST_DATA_02, 'utf8') as string,
 };
 
-const getEmptyRowsAndCols = (lines: string[]) => {
-  const numRows = lines.length;
-  const numCols = lines[0]!.length;
+const getStarsAndEmptyRowsCols = (lines: string[]) => {
+  const stars: [number, number][] = [];
+  const emptyRowsMap = new Map<number, boolean>(
+    Array.from({ length: lines.length })
+      .fill(undefined)
+      .map((_, index) => [index, true]),
+  );
+  const emptyColsMap = new Map<number, boolean>(
+    Array.from({ length: lines[0]!.length })
+      .fill(undefined)
+      .map((_, index) => [index, true]),
+  );
 
-  const emptyRowsMap = new Map<number, boolean>();
-  const emptyColsMap = new Map<number, boolean>();
-  for (let rowIdx = 0; rowIdx < numRows; rowIdx++) {
-    emptyRowsMap.set(rowIdx, true);
-    for (let colIdx = 0; colIdx < numCols; colIdx++) {
-      if (!emptyColsMap.has(colIdx)) {
-        emptyColsMap.set(colIdx, true);
-      }
-      if (lines[rowIdx]![colIdx] === '#') {
+  for (let rowIdx = 0; rowIdx < lines.length; rowIdx++) {
+    const rowEntries = lines[rowIdx]!.split('');
+    for (let colIdx = 0; colIdx < lines[0]!.length; colIdx++) {
+      const nextEntry = rowEntries[colIdx];
+      if (nextEntry === '#') {
+        stars.push([colIdx, rowIdx]);
         emptyRowsMap.set(rowIdx, false);
         emptyColsMap.set(colIdx, false);
       }
     }
+    lines[rowIdx] = rowEntries.join('');
   }
-  const emptyRows = [...emptyRowsMap.entries()]
-    .filter(([, value]) => value === true)
-    .map(([key]) => key);
+
   const emptyCols = [...emptyColsMap.entries()]
-    .filter(([, value]) => value === true)
-    .map(([key]) => key);
+    .filter(([, isEmpty]) => isEmpty)
+    .map(([colIdx]) => colIdx);
+  const emptyRows = [...emptyRowsMap.entries()]
+    .filter(([, isEmpty]) => isEmpty)
+    .map(([colIdx]) => colIdx);
 
-  return { emptyCols, emptyRows };
+  return { emptyCols, emptyRows, stars };
 };
 
-const mutateAndInsertEmptyRowsCols = (lines: string[]) => {
-  const { emptyCols, emptyRows } = getEmptyRowsAndCols(lines);
-  for (let rowIdx = 0; rowIdx < lines.length; rowIdx++) {
-    const cols = lines[rowIdx]!.split('') as (string | string[])[];
+const spreadStars = (args: {
+  emptyCols: number[];
+  emptyRows: number[];
+  expandFactor: number;
+  stars: [number, number][];
+}) => {
+  const { emptyCols, emptyRows, stars, expandFactor } = args;
+  const expandedStars: [number, number][] = [];
+  for (const nextStar of stars) {
+    const [starCol, starRow] = nextStar;
+    let updatedCol = starCol;
+    let updatedRow = starRow;
+
     for (const nextCol of emptyCols) {
-      cols[nextCol] = ['.', '.'];
+      if (nextCol > starCol) {
+        break;
+      }
+      updatedCol += expandFactor;
     }
-    lines[rowIdx] = cols.flat().join('');
+    for (const nextRow of emptyRows) {
+      if (nextRow > starRow) {
+        break;
+      }
+      updatedRow += expandFactor;
+    }
+
+    expandedStars.push([updatedCol, updatedRow]);
   }
-  for (const nextEmptyRow of emptyRows.reverse()) {
-    lines.splice(nextEmptyRow, 0, lines[nextEmptyRow]!.slice());
-  }
+
+  return expandedStars;
 };
 
-const numPairToString = (num1: number, num2: number): string => {
-  return `${num1}_${num2}`;
-};
+const getTotalDistanceBetweenPairs = (stars: [number, number][]) => {
+  let totalPathsLength = 0;
 
-const stringToNumPair = (input: string): [number, number] => {
-  const numberStrings = input.split('_');
-  if (numberStrings.length !== 2) {
-    throw new Error(`Cannot convert to num-pair - invalid format: "${input}"`);
+  for (let i = 0; i < stars.length; i++) {
+    for (let j = i + 1; j < stars.length; j++) {
+      const firstStar = stars[i]!;
+      const secondStar = stars[j]!;
+      const distance =
+        Math.abs(firstStar[0] - secondStar[0]) +
+        Math.abs(firstStar[1] - secondStar[1]);
+      // console.log(`Pair of ${i} and ${j} (distance = ${distance})`);
+      totalPathsLength += distance;
+    }
   }
-  return numberStrings.map((n) => Number.parseInt(n, 10)) as [number, number];
+
+  return totalPathsLength;
 };
 
 // Run task one
@@ -82,62 +114,20 @@ const runOne = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST1 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
-  // Insert empty rows/cols and get updated row/col counts
-  mutateAndInsertEmptyRowsCols(lines);
-  const numRows = lines.length;
-  const numCols = lines[0]!.length;
-
-  // Find stars
-  const starsMap = new Map<number, string>();
-  const reverseStarsMap = new Map<string, number>();
-  for (let rowIdx = 0; rowIdx < numRows; rowIdx++) {
-    const rowEntries = lines[rowIdx]!.split('');
-    for (let colIdx = 0; colIdx < numCols; colIdx++) {
-      const nextEntry = rowEntries[colIdx];
-      if (nextEntry === '#') {
-        const squareId = numPairToString(colIdx, rowIdx);
-        const starNumber = starsMap.size + 1;
-        starsMap.set(starNumber, squareId);
-        reverseStarsMap.set(squareId, starNumber);
-      }
-    }
-    lines[rowIdx] = rowEntries.join('');
-  }
-  // console.log('starsMap', starsMap);
-  // console.log('reverseStarsMap', reverseStarsMap);
-  // console.log(lines.join('\n'));
-
-  const shortestPaths = new Map<string, number>();
-  for (const [startStar, startPos] of starsMap.entries()) {
-    const [startCol, startRow] = stringToNumPair(startPos);
-    for (const [targetStar, targetPos] of starsMap.entries()) {
-      if (targetStar === startStar) {
-        continue;
-      }
-      const starsPair = `${Math.min(targetStar, startStar)}_${Math.max(
-        targetStar,
-        startStar,
-      )}`;
-      if (shortestPaths.has(starsPair)) {
-        continue;
-      }
-
-      const [targetCol, targetRow] = stringToNumPair(targetPos);
-      const distance =
-        Math.abs(targetCol - startCol) + Math.abs(targetRow - startRow);
-      shortestPaths.set(starsPair, distance);
-    }
-  }
-
-  console.log(`Number of stars: ${starsMap.size}`);
-  // console.log(shortestPaths);
-  const totalOfShortestPaths = [...shortestPaths.values()].reduce(
-    (prev, next) => prev + next,
-    0,
-  );
+  const { emptyCols, emptyRows, stars } = getStarsAndEmptyRowsCols(lines);
+  const expandedStars = spreadStars({
+    emptyCols,
+    emptyRows,
+    expandFactor: 1,
+    stars,
+  });
+  // console.log('stars', stars);
+  // console.log({ emptyCols, emptyRows });
+  // console.log('expandedStars', expandedStars);
+  const totalDistance = getTotalDistanceBetweenPairs(expandedStars);
 
   logAnswer({
-    answer: totalOfShortestPaths,
+    answer: totalDistance,
     expected: USE_TEST_DATA ? 374 : 9_550_717,
     partNum: 1,
     taskStartedAt,
@@ -150,9 +140,21 @@ const runTwo = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
+  const { emptyCols, emptyRows, stars } = getStarsAndEmptyRowsCols(lines);
+  const expandedStars = spreadStars({
+    emptyCols,
+    emptyRows,
+    expandFactor: 10,
+    stars,
+  });
+  // console.log('stars', stars);
+  // console.log({ emptyCols, emptyRows });
+  // console.log('expandedStars', expandedStars);
+  const totalDistance = getTotalDistanceBetweenPairs(expandedStars);
+
   logAnswer({
-    answer: lines.length,
-    expected: USE_TEST_DATA ? 8_410 : undefined,
+    answer: totalDistance,
+    expected: USE_TEST_DATA ? 1_030 : undefined,
     partNum: 2,
     taskStartedAt,
   });
