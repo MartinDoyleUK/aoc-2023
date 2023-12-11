@@ -100,8 +100,10 @@ const getTotalDistanceBetweenPairs = (stars: [number, number][]) => {
       const distance =
         Math.abs(firstStar[0] - secondStar[0]) +
         Math.abs(firstStar[1] - secondStar[1]);
-      // console.log(`Pair of ${i} and ${j} (distance = ${distance})`);
       totalPathsLength += distance;
+      // console.log(
+      //   `Pair of ${i} and ${j} :: ${firstStar} -> ${secondStar} = ${distance} :: total = ${totalPathsLength}`,
+      // );
     }
   }
 
@@ -145,6 +147,7 @@ const runTwo = () => {
     emptyCols,
     emptyRows,
     expandFactor: 10,
+    // expandFactor: 1_000_000,
     stars,
   });
   // console.log('stars', stars);
