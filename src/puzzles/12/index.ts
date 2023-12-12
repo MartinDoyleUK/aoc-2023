@@ -6,7 +6,7 @@ import url from 'node:url';
 import { logAnswer } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = false;
+const USE_TEST_DATA = true;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -30,63 +30,68 @@ const runOne = () => {
 
   let totalCombinations = 0;
   for (const nextLine of lines) {
+    console.log(`nextLine = "${nextLine}"`);
+
     const [input, counts] = nextLine.split(' ') as [string, string];
+    const countNums = counts.split(',').map((s) => Number.parseInt(s, 10));
+    let combinations = 0;
 
-    // Construct regex for testing the possibilities
-    const countsRegexBuilder: string[] = [];
-    for (const nextCount of counts.split(',')) {
-      if (countsRegexBuilder.length) {
-        countsRegexBuilder.push(`0+`);
+    const inputGroups = input.replaceAll(/\.+/gu, ' ').trim().split(' ');
+    for (const nextInputGroup of inputGroups) {
+      const hasUnknowns = nextInputGroup.includes('?');
+      const groupSize = nextInputGroup.length;
+      const includedCounts: number[] = [countNums.shift()!];
+
+      let minGroupLength = -1;
+      let hasEnoughCounts = false;
+      while (!hasEnoughCounts) {
+        minGroupLength =
+          includedCounts.reduce((prev, next) => prev + next, 0) +
+          includedCounts.length -
+          1;
+        console.log({ groupSize, minGroupLength });
+        if (
+          countNums.length === 0 ||
+          minGroupLength + countNums[0]! + 1 > groupSize
+        ) {
+          hasEnoughCounts = true;
+        } else {
+          includedCounts.push(countNums.shift()!);
+        }
       }
-      if (nextCount === '1') {
-        countsRegexBuilder.push(`1`);
-      } else {
-        countsRegexBuilder.push(`1{${nextCount}}`);
+
+      console.log({
+        hasUnknowns,
+        includedCounts,
+        minGroupLength,
+        nextInputGroup,
+      });
+
+      if (!hasUnknowns) {
+        console.log('Has no unknowns - skipping');
+        continue;
       }
+
+      if (groupSize === minGroupLength) {
+        console.log('Group size matches input groups - skipping');
+        continue;
+      }
+
+      const numSpaces = groupSize - minGroupLength;
+      combinations += numSpaces + 1;
+
+      // console.log({
+      //   includedCounts,
+      //   minGroupLength,
+      //   nextInputGroup,
+      //   numSpaces,
+      // });
     }
-    // eslint-disable-next-line regexp/no-super-linear-backtracking, regexp/optimal-quantifier-concatenation
-    const regexString = `^0*${countsRegexBuilder.join('')}0*$`;
-    const lineRegex = new RegExp(regexString, 'u');
 
-    // Convert to zeros and ones for easier binary replacement
-    const record = input.replaceAll('.', '0').replaceAll('#', '1');
+    console.log(`line has ${combinations} valid combinations
+`);
 
-    // Count the placeholders
-    const numUnknowns = record.split('?').length - 1;
-
-    // console.log(
-    //   `line of "${nextLine}" has ${numUnknowns} unknowns and gives regex of ${lineRegex} and record of "${record}"`,
-    // );
-    // console.log(`line of "${nextLine}" has ${numUnknowns} unknowns`);
-
-    // Try all the combinations of values and test each time
-    let lineCombinations = 0;
-    const maxValue = 2 ** numUnknowns - 1;
-    const padLength = maxValue.toString(2).length;
-    // const validCombinations: string[] = [];
-    // const invalidCombinations: string[] = [];
-    for (let i = 0; i < 2 ** numUnknowns; i++) {
-      const replacements = i.toString(2).padStart(padLength, '0').split('');
-      const replaced = record.replaceAll('?', () => replacements.shift()!);
-      if (lineRegex.test(replaced)) {
-        // validCombinations.push(replaced);
-        lineCombinations++;
-        // } else {
-        //   invalidCombinations.push(replaced);
-      }
-    }
-
-    //     console.log(
-    //       `
-    // line "${nextLine}" has ${validCombinations.length
-    //       } valid combinations using regex ${lineRegex}
-    // VALID
-    // ${validCombinations.join('\n')}
-    // INVALID
-    // ${invalidCombinations.join('\n')}`,
-    //     );
-
-    totalCombinations += lineCombinations;
+    totalCombinations += combinations || 1;
     // totalCombinations += validCombinations.length;
   }
 
@@ -104,9 +109,11 @@ const runTwo = () => {
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
   const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
 
+  const totalCombinations = lines.length;
+
   logAnswer({
-    answer: lines.length,
-    expected: USE_TEST_DATA ? undefined : undefined,
+    answer: totalCombinations,
+    expected: USE_TEST_DATA ? 525_152 : undefined,
     partNum: 2,
     taskStartedAt,
   });
