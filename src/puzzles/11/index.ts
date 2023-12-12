@@ -6,7 +6,7 @@ import url from 'node:url';
 import { logAnswer } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = true;
+const USE_TEST_DATA = false;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -75,13 +75,13 @@ const spreadStars = (args: {
       if (nextCol > starCol) {
         break;
       }
-      updatedCol += expandFactor;
+      updatedCol += expandFactor - 1;
     }
     for (const nextRow of emptyRows) {
       if (nextRow > starRow) {
         break;
       }
-      updatedRow += expandFactor;
+      updatedRow += expandFactor - 1;
     }
 
     expandedStars.push([updatedCol, updatedRow]);
@@ -120,12 +120,9 @@ const runOne = () => {
   const expandedStars = spreadStars({
     emptyCols,
     emptyRows,
-    expandFactor: 1,
+    expandFactor: 2,
     stars,
   });
-  // console.log('stars', stars);
-  // console.log({ emptyCols, emptyRows });
-  // console.log('expandedStars', expandedStars);
   const totalDistance = getTotalDistanceBetweenPairs(expandedStars);
 
   logAnswer({
@@ -146,13 +143,9 @@ const runTwo = () => {
   const expandedStars = spreadStars({
     emptyCols,
     emptyRows,
-    expandFactor: 10,
-    // expandFactor: 1_000_000,
+    expandFactor: 1_000_000,
     stars,
   });
-  // console.log('stars', stars);
-  // console.log({ emptyCols, emptyRows });
-  // console.log('expandedStars', expandedStars);
   const totalDistance = getTotalDistanceBetweenPairs(expandedStars);
 
   logAnswer({
