@@ -80,3 +80,17 @@ export const findTransitionByIndex: FindTransitionByIndexFn = ({
   }
   return transition;
 };
+
+export const memoize = <Args, Result>(
+  fn: (argsObj: Args) => Result,
+): ((argsObj: Args) => Result) => {
+  const resultsMap = new Map<string, Result>();
+
+  return (argsObj: Args) => {
+    const argsString = JSON.stringify(argsObj);
+    if (!resultsMap.has(argsString)) {
+      resultsMap.set(argsString, fn(argsObj));
+    }
+    return resultsMap.get(argsString)!;
+  };
+};

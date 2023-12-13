@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 
-import { logAnswer } from '../../utils';
+import { logAnswer, memoize } from '../../utils';
 
 // Toggle this to use test or real data
 const USE_TEST_DATA = true;
@@ -22,6 +22,24 @@ const DATA = {
   TEST2: fs.readFileSync(PATHS.TEST_DATA_02, 'utf8') as string,
 };
 
+const countArrangements = memoize(
+  (args: { numberGroups: number[]; targetPattern: string }): number => {
+    const { numberGroups, targetPattern } = args;
+    const counter = 0;
+
+    // countArrangements({"numberGroups":[1],"targetPattern":"??"})
+
+    console.log(
+      `New lookup for countArrangements(${JSON.stringify({
+        numberGroups,
+        targetPattern,
+      })}) = ${counter}`,
+    );
+
+    return counter;
+  },
+);
+
 // Run task one
 const runOne = () => {
   const taskStartedAt = performance.now();
@@ -30,17 +48,21 @@ const runOne = () => {
 
   let totalCombinations = 0;
   for (const nextLine of lines) {
-    console.log(`nextLine = "${nextLine}"`);
-
     const [input, counts] = nextLine.split(' ') as [string, string];
     const countNums = counts.split(',').map((s) => Number.parseInt(s, 10));
-    let combinations = 0;
+    let nextLineArrangements = 0;
+    console.log(`
+********************
+line = ${nextLine}
+********************`);
 
     const inputGroups = input.replaceAll(/\.+/gu, ' ').trim().split(' ');
     for (const nextInputGroup of inputGroups) {
       const hasUnknowns = nextInputGroup.includes('?');
       const groupSize = nextInputGroup.length;
       const includedCounts: number[] = [countNums.shift()!];
+      console.log(`
+nextInputGroup = ${nextInputGroup}`);
 
       let minGroupLength = -1;
       let hasEnoughCounts = false;
@@ -49,50 +71,52 @@ const runOne = () => {
           includedCounts.reduce((prev, next) => prev + next, 0) +
           includedCounts.length -
           1;
-        console.log({ groupSize, minGroupLength });
         if (
           countNums.length === 0 ||
           minGroupLength + countNums[0]! + 1 > groupSize
         ) {
+          // console.log(
+          //   `minGroupLength(${minGroupLength}) + countNums[0](${countNums[0]}) + 1 > groupSize(${groupSize}) - breaking with [${includedCounts}]`,
+          // );
+          console.log(`breaking with [${includedCounts}]`);
           hasEnoughCounts = true;
         } else {
+          console.log(`Adding count ${countNums[0]} to [${includedCounts}]`);
           includedCounts.push(countNums.shift()!);
         }
       }
 
-      console.log({
-        hasUnknowns,
-        includedCounts,
-        minGroupLength,
-        nextInputGroup,
-      });
-
       if (!hasUnknowns) {
-        console.log('Has no unknowns - skipping');
+        console.log(`[SKIP] "${nextInputGroup}" has no unknowns`);
         continue;
       }
 
       if (groupSize === minGroupLength) {
-        console.log('Group size matches input groups - skipping');
+        console.log(
+          `[SKIP] "${nextInputGroup}" perfectly matches [${includedCounts}]`,
+        );
         continue;
       }
 
-      const numSpaces = groupSize - minGroupLength;
-      combinations += numSpaces + 1;
+      const numArrangements = countArrangements({
+        numberGroups: includedCounts,
+        targetPattern: nextInputGroup,
+      });
+      console.log(`numArrangements = ${numArrangements}`);
 
-      // console.log({
-      //   includedCounts,
-      //   minGroupLength,
-      //   nextInputGroup,
-      //   numSpaces,
-      // });
+      nextLineArrangements += numArrangements;
     }
 
-    console.log(`line has ${combinations} valid combinations
+    // Not had any permutations, must be only one possible arrangement
+    if (nextLineArrangements === 0) {
+      nextLineArrangements++;
+    }
+
+    console.log(`
+➡ Line "${nextLine}" has ${nextLineArrangements} valid combination(s)
 `);
 
-    totalCombinations += combinations || 1;
-    // totalCombinations += validCombinations.length;
+    totalCombinations += nextLineArrangements;
   }
 
   logAnswer({
