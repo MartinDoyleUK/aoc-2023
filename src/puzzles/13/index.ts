@@ -34,14 +34,15 @@ const runOne = () => {
   console.log('');
 
   let totalSum = 0;
-  for (const patternRows of patterns) {
+  for (let patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
+    const patternRows = patterns[patternIdx]!.slice();
     let colsLeftOfSymmetry = 0;
     let rowsAboveSymmetry = 0;
 
-    console.log(`  ***** NEXT PATTERN *****
-  ${patternRows
-    .map((row, idx) => `${idx.toString().padStart(2, '0')}: ${row}`)
-    .join('\n  ')}`);
+    //   console.log(`  ***** NEXT PATTERN *****
+    // ${patternRows
+    //   // .map((row, idx) => `${idx.toString().padStart(2, '0')}: ${row}`)
+    //   .join('\n  ')}`);
 
     // Check first row for possible horizontal symmetry (i.e. vertical mirror)
     let nextFirstRow: string | undefined = patternRows.shift()!;
@@ -149,18 +150,45 @@ const runOne = () => {
 
     // Add values for this pattern
     if (colsLeftOfSymmetry > 0) {
-      console.log(
-        `  This pattern has LEFT-RIGHT symmetry at COLUMN ${colsLeftOfSymmetry}`,
-      );
+      // const rows = patterns[patternIdx]!.map((nextRow, rowIdx) => {
+      const rows = patterns[patternIdx]!.map((nextRow) => {
+        // const lineNum = rowIdx.toString().padStart(2, '0');
+        const beforeMirror = nextRow.slice(0, colsLeftOfSymmetry);
+        const afterMirror = nextRow.slice(colsLeftOfSymmetry);
+
+        // console.log({ afterMirror, beforeMirror, lineNum, nextRow });
+
+        // return `${lineNum}: ${beforeMirror} | ${afterMirror}`;
+        return `${beforeMirror} | ${afterMirror}`;
+      });
+      console.log(`  ***** NEXT PATTERN *****
+
+  ${rows.join('\n  ')}
+
+  Pattern #${
+    patternIdx + 1
+  } has LEFT-RIGHT symmetry at COLUMN ${colsLeftOfSymmetry}`);
       totalSum += colsLeftOfSymmetry;
     } else if (rowsAboveSymmetry > 0) {
-      console.log(
-        `  This pattern has UP-DOWN symmetry at ROW ${rowsAboveSymmetry}`,
+      const rows = patterns[patternIdx]!;
+      rows.splice(
+        rowsAboveSymmetry,
+        0,
+        '',
+        Array.from({ length: lineLength }).fill('-').join(''),
+        '',
       );
+      console.log(`  ***** NEXT PATTERN *****
+
+  ${rows.join('\n  ')}
+
+  Pattern #${patternIdx + 1} has UP-DOWN symmetry at ROW ${rowsAboveSymmetry}`);
       totalSum += 100 * rowsAboveSymmetry;
     } else {
       throw new Error(
-        'WARNING: This pattern has neither vertical nor horizontal symmetry',
+        `WARNING: Pattern #${
+          patternIdx + 1
+        } has neither vertical nor horizontal symmetry`,
       );
     }
     console.log('');
