@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable id-length */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,18 +32,13 @@ const runOne = () => {
     .split('\n\n')
     .map((lines) => lines.split('\n').filter((line) => line.trim().length > 0));
 
-  console.log('');
+  // console.log('');
 
   let totalSum = 0;
   for (let patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
     const patternRows = patterns[patternIdx]!.slice();
     let colsLeftOfSymmetry = 0;
     let rowsAboveSymmetry = 0;
-
-    //   console.log(`  ***** NEXT PATTERN *****
-    // ${patternRows
-    //   // .map((row, idx) => `${idx.toString().padStart(2, '0')}: ${row}`)
-    //   .join('\n  ')}`);
 
     // Check first row for possible horizontal symmetry (i.e. vertical mirror)
     let nextFirstRow: string | undefined = patternRows.shift()!;
@@ -64,37 +60,17 @@ const runOne = () => {
       colsToLeft.unshift(nextChar);
     }
 
-    // console.log(`First row = "${nextFirstRow}"`);
-    // console.log(`Possibly symmetry in cols [${possibleSymmetryCols}]
-    // `);
-
     const rowsAbove: string[] = [nextFirstRow];
     while ((nextFirstRow = patternRows[0])) {
-      //       console.log(`
-      // Looking at row "${nextFirstRow}"`);
-      //       console.log(`rowsAbove: [
-      //   ${rowsAbove.join(',\n  ')}
-      // ]
-      // patternRows: [
-      //   ${patternRows.join(',\n  ')}
-      // ]
-      // `);
-
       if (nextFirstRow === rowsAbove[0]) {
         let hasVerticalSymmetry = true;
         for (let i = 1; i < rowsAbove.length && i < patternRows.length; i++) {
-          // console.log(`Comparing "${rowsAbove[i]}" and "${patternRows[i]}"`);
           if (rowsAbove[i] !== patternRows[i]) {
             hasVerticalSymmetry = false;
-            // console.log('No match!');
             break;
           }
-          // console.log('Match!');
         }
         if (hasVerticalSymmetry) {
-          // console.log(
-          //   `04: Found vertical symmetry before row ${rowsAbove.length}`,
-          // );
           rowsAboveSymmetry = rowsAbove.length;
           break;
         }
@@ -106,10 +82,6 @@ const runOne = () => {
 
       const noSymmetryCols: number[] = [];
       for (const nextCol of possibleSymmetryCols) {
-        // const mutated = nextFirstRow.split('');
-        // mutated.splice(nextCol, 0, 'X');
-        // console.log(`"${mutated.join('')}"`);
-
         const overHalfway = nextCol >= halfwayPoint;
         const reflection = overHalfway
           ? reverseString(
@@ -127,7 +99,7 @@ const runOne = () => {
           noSymmetryCols.push(nextCol);
         }
 
-        //         console.log(`For possibly symmetry col ${nextCol} ...
+        // console.log(`For possibly symmetry col ${nextCol} ...
         // lineLength = ${lineLength}
         // halfwayPoint = ${halfwayPoint}
         // overHalfway = ${overHalfway}
@@ -142,56 +114,45 @@ const runOne = () => {
 
       rowsAbove.unshift(patternRows.shift()!);
       nextFirstRow = patternRows[0];
-    }
 
-    if (possibleSymmetryCols.length === 1) {
-      colsLeftOfSymmetry = possibleSymmetryCols[0]!;
+      if (nextFirstRow === undefined && possibleSymmetryCols.length === 1) {
+        colsLeftOfSymmetry = possibleSymmetryCols[0]!;
+      }
     }
 
     // Add values for this pattern
     if (colsLeftOfSymmetry > 0) {
-      // const rows = patterns[patternIdx]!.map((nextRow, rowIdx) => {
-      const rows = patterns[patternIdx]!.map((nextRow) => {
-        // const lineNum = rowIdx.toString().padStart(2, '0');
-        const beforeMirror = nextRow.slice(0, colsLeftOfSymmetry);
-        const afterMirror = nextRow.slice(colsLeftOfSymmetry);
+      //     const rows = patterns[patternIdx]!.map((nextRow) => {
+      //       const beforeMirror = nextRow.slice(0, colsLeftOfSymmetry);
+      //       const afterMirror = nextRow.slice(colsLeftOfSymmetry);
 
-        // console.log({ afterMirror, beforeMirror, lineNum, nextRow });
+      //       return `${beforeMirror} | ${afterMirror}`;
+      //     });
+      //     console.log(`  ***** NEXT PATTERN *****
 
-        // return `${lineNum}: ${beforeMirror} | ${afterMirror}`;
-        return `${beforeMirror} | ${afterMirror}`;
-      });
-      console.log(`  ***** NEXT PATTERN *****
+      // ${rows.join('\n  ')}
 
-  ${rows.join('\n  ')}
-
-  Pattern #${
-    patternIdx + 1
-  } has LEFT-RIGHT symmetry at COLUMN ${colsLeftOfSymmetry}`);
+      // Pattern #${
+      //   patternIdx + 1
+      // } has LEFT-RIGHT symmetry at COLUMN ${colsLeftOfSymmetry}`);
       totalSum += colsLeftOfSymmetry;
     } else if (rowsAboveSymmetry > 0) {
-      const rows = patterns[patternIdx]!;
-      rows.splice(
-        rowsAboveSymmetry,
-        0,
-        '',
-        Array.from({ length: lineLength }).fill('-').join(''),
-        '',
-      );
-      console.log(`  ***** NEXT PATTERN *****
+      //     const rows = patterns[patternIdx]!;
+      //     rows.splice(
+      //       rowsAboveSymmetry,
+      //       0,
+      //       '',
+      //       Array.from({ length: lineLength }).fill('-').join(''),
+      //       '',
+      //     );
+      //     console.log(`  ***** NEXT PATTERN *****
 
-  ${rows.join('\n  ')}
+      // ${rows.join('\n  ')}
 
-  Pattern #${patternIdx + 1} has UP-DOWN symmetry at ROW ${rowsAboveSymmetry}`);
+      // Pattern #${patternIdx + 1} has UP-DOWN symmetry at ROW ${rowsAboveSymmetry}`);
       totalSum += 100 * rowsAboveSymmetry;
-    } else {
-      throw new Error(
-        `WARNING: Pattern #${
-          patternIdx + 1
-        } has neither vertical nor horizontal symmetry`,
-      );
     }
-    console.log('');
+    // console.log('');
   }
 
   logAnswer({

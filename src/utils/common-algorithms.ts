@@ -83,14 +83,27 @@ export const findTransitionByIndex: FindTransitionByIndexFn = ({
 
 export const memoize = <Args, Result>(
   fn: (argsObj: Args) => Result,
+  countExecutions = false,
 ): ((argsObj: Args) => Result) => {
   const resultsMap = new Map<string, Result>();
+  const argCounts = new Map<string, number>();
 
-  return (argsObj: Args) => {
+  const memoized = (argsObj: Args) => {
     const argsString = JSON.stringify(argsObj);
     if (!resultsMap.has(argsString)) {
       resultsMap.set(argsString, fn(argsObj));
     }
+
+    if (countExecutions) {
+      const existingCount = argCounts.get(argsString) ?? 0;
+      argCounts.set(argsString, existingCount + 1);
+    }
+
     return resultsMap.get(argsString)!;
   };
+  Object.assign(memoized, {
+    getCounts: () => argCounts,
+  });
+
+  return memoized;
 };
