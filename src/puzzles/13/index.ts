@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 
-import { logAnswer, reverseString } from '../../utils';
+import { logAnswer, memoize, reverseString } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = false;
+const USE_TEST_DATA = true;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -23,6 +23,71 @@ const DATA = {
   TEST2: fs.readFileSync(PATHS.TEST_DATA_02, 'utf8') as string,
 };
 
+const checkRowForLeftRightSymmetry = memoize(
+  ({
+    colsToCheck,
+    patternWidth,
+    row,
+  }: {
+    colsToCheck: number[];
+    patternWidth: number;
+    row: string;
+  }): number[] => {
+    const colsWithoutSymmetry: number[] = [];
+    for (const nextCol of colsToCheck) {
+      const overHalfway = nextCol >= patternWidth / 2;
+      const reflection = overHalfway
+        ? reverseString(row.slice(nextCol - (patternWidth - nextCol), nextCol))
+        : reverseString(row.slice(0, nextCol));
+      const restOfLine = overHalfway
+        ? row.slice(nextCol)
+        : row.slice(nextCol, nextCol * 2);
+      const isReflection = restOfLine === reflection;
+
+      if (!isReflection) {
+        colsWithoutSymmetry.push(nextCol);
+      }
+
+      //     console.log(`Checking row "${row}" for possible symmetry in col ${nextCol} ...
+      // patternWidth = ${patternWidth}
+      // overHalfway = ${overHalfway}
+      // reflection = ${reflection}
+      // restOfLine = ${restOfLine}
+      // isReflection = ${isReflection}
+      //     `);
+    }
+
+    const cleanedCols = colsToCheck.filter(
+      (nextCol) => !colsWithoutSymmetry.includes(nextCol),
+    );
+
+    // console.log(`[${colsToCheck}] -> [${cleanedCols}]`);
+
+    return cleanedCols;
+  },
+);
+
+const checkForUpDownSymmetry = memoize(
+  ({
+    rowsAbove,
+    rowsBelow,
+  }: {
+    rowsAbove: string[];
+    rowsBelow: string[];
+  }): number | undefined => {
+    let hasUpDownSymmetry = true;
+
+    for (let i = 1; i < rowsAbove.length && i < rowsBelow.length; i++) {
+      if (rowsAbove[i] !== rowsBelow[i]) {
+        hasUpDownSymmetry = false;
+        break;
+      }
+    }
+
+    return hasUpDownSymmetry ? rowsAbove.length : undefined;
+  },
+);
+
 // Run task one
 // eslint-disable-next-line complexity
 const runOne = () => {
@@ -31,7 +96,6 @@ const runOne = () => {
   const patterns = dataToUse
     .split('\n\n')
     .map((lines) => lines.split('\n').filter((line) => line.trim().length > 0));
-
   // console.log('');
 
   let totalSum = 0;
@@ -40,82 +104,53 @@ const runOne = () => {
     let colsLeftOfSymmetry = 0;
     let rowsAboveSymmetry = 0;
 
-    // Check first row for possible horizontal symmetry (i.e. vertical mirror)
-    let nextFirstRow: string | undefined = patternRows.shift()!;
-    const lineLength = nextFirstRow.length;
-    const halfwayPoint = lineLength / 2;
-    let possibleSymmetryCols = [];
-    const colsToLeft: string[] = [nextFirstRow[0]!];
-    for (let col = 1; col < lineLength; col++) {
-      const nextChar = nextFirstRow[col]!;
-      const overHalfway = col >= halfwayPoint;
-      const reflection = colsToLeft.join('');
-      const restOfLine = nextFirstRow.slice(col);
-      const isReflection = overHalfway
-        ? reflection.startsWith(restOfLine)
-        : restOfLine.startsWith(reflection);
-      if (isReflection) {
-        possibleSymmetryCols.push(col);
-      }
-      colsToLeft.unshift(nextChar);
-    }
+    //     console.log(`
+    // Pattern ${patternIdx + 1}:
 
-    const rowsAbove: string[] = [nextFirstRow];
-    while ((nextFirstRow = patternRows[0])) {
-      if (nextFirstRow === rowsAbove[0]) {
-        let hasVerticalSymmetry = true;
-        for (let i = 1; i < rowsAbove.length && i < patternRows.length; i++) {
-          if (rowsAbove[i] !== patternRows[i]) {
-            hasVerticalSymmetry = false;
-            break;
-          }
-        }
-        if (hasVerticalSymmetry) {
-          rowsAboveSymmetry = rowsAbove.length;
+    //   ${patternRows.join('\n  ')}
+    // `);
+
+    const firstRow = patternRows.shift()!;
+    const patternWidth = firstRow.length;
+    const startingColsToCheck = Array.from({ length: patternWidth - 1 }).map(
+      (_, idx) => idx + 1,
+    );
+    let possibleSymmetryCols = checkRowForLeftRightSymmetry({
+      colsToCheck: startingColsToCheck,
+      patternWidth,
+      row: firstRow,
+    });
+
+    const rowsAbove: string[] = [firstRow];
+    let nextRow: string | undefined;
+    while ((nextRow = patternRows[0])) {
+      if (nextRow === rowsAbove[0]) {
+        const symmetryRow = checkForUpDownSymmetry({
+          rowsAbove,
+          rowsBelow: patternRows,
+        });
+
+        if (symmetryRow !== undefined) {
+          // console.log(`Found up-down symmetry at row ${symmetryRow}`);
+          rowsAboveSymmetry = symmetryRow;
           break;
         }
       }
 
       // console.log(
-      //   `Checking horizontal symmetry for line "${nextFirstRow}" in columns [${possibleSymmetryCols}]`,
+      //   `Checking horizontal symmetry for line "${nextRow}" in columns [${possibleSymmetryCols}]`,
       // );
 
-      const noSymmetryCols: number[] = [];
-      for (const nextCol of possibleSymmetryCols) {
-        const overHalfway = nextCol >= halfwayPoint;
-        const reflection = overHalfway
-          ? reverseString(
-              nextFirstRow.slice(nextCol - (lineLength - nextCol), nextCol),
-            )
-          : reverseString(nextFirstRow.slice(0, nextCol));
-        const restOfLine = overHalfway
-          ? nextFirstRow.slice(nextCol)
-          : nextFirstRow.slice(nextCol, nextCol * 2);
-        const isReflection = overHalfway
-          ? reflection.startsWith(restOfLine)
-          : restOfLine.startsWith(reflection);
-
-        if (!isReflection) {
-          noSymmetryCols.push(nextCol);
-        }
-
-        // console.log(`For possibly symmetry col ${nextCol} ...
-        // lineLength = ${lineLength}
-        // halfwayPoint = ${halfwayPoint}
-        // overHalfway = ${overHalfway}
-        // reflection = ${reflection}
-        // restOfLine = ${restOfLine}
-        // isReflection = ${isReflection}
-        // `);
-      }
-      possibleSymmetryCols = possibleSymmetryCols.filter(
-        (col) => !noSymmetryCols.includes(col),
-      );
+      possibleSymmetryCols = checkRowForLeftRightSymmetry({
+        colsToCheck: possibleSymmetryCols,
+        patternWidth,
+        row: nextRow,
+      });
 
       rowsAbove.unshift(patternRows.shift()!);
-      nextFirstRow = patternRows[0];
+      nextRow = patternRows[0];
 
-      if (nextFirstRow === undefined && possibleSymmetryCols.length === 1) {
+      if (nextRow === undefined && possibleSymmetryCols.length === 1) {
         colsLeftOfSymmetry = possibleSymmetryCols[0]!;
       }
     }
@@ -157,7 +192,7 @@ const runOne = () => {
 
   logAnswer({
     answer: totalSum,
-    expected: USE_TEST_DATA ? 405 : undefined,
+    expected: USE_TEST_DATA ? 405 : 35_538,
     partNum: 1,
     taskStartedAt,
   });
