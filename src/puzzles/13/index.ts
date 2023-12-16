@@ -7,7 +7,7 @@ import url from 'node:url';
 import { logAnswer, memoize, reverseString } from '../../utils';
 
 // Toggle this to use test or real data
-const USE_TEST_DATA = true;
+const USE_TEST_DATA = false;
 
 // Load data from files
 const THIS_FILENAME = url.fileURLToPath(import.meta.url);
@@ -47,21 +47,11 @@ const checkRowForLeftRightSymmetry = memoize(
       if (!isReflection) {
         colsWithoutSymmetry.push(nextCol);
       }
-
-      //     console.log(`Checking row "${row}" for possible symmetry in col ${nextCol} ...
-      // patternWidth = ${patternWidth}
-      // overHalfway = ${overHalfway}
-      // reflection = ${reflection}
-      // restOfLine = ${restOfLine}
-      // isReflection = ${isReflection}
-      //     `);
     }
 
     const cleanedCols = colsToCheck.filter(
       (nextCol) => !colsWithoutSymmetry.includes(nextCol),
     );
-
-    // console.log(`[${colsToCheck}] -> [${cleanedCols}]`);
 
     return cleanedCols;
   },
@@ -88,6 +78,85 @@ const checkForUpDownSymmetry = memoize(
   },
 );
 
+const getAllVariants = (pattern: string[]): string[][] => {
+  const variants: string[][] = [];
+
+  const patternString = pattern.join('|');
+  //   console.log(`
+  // For pattern string:
+  //   ${patternString}
+  // Variants:`);
+
+  for (let i = 0; i < patternString.length; i++) {
+    if (patternString.charAt(i) === '|') {
+      continue;
+    }
+
+    const firstHalf = patternString.slice(0, i);
+    const flippedChar = patternString.charAt(i) === '#' ? '.' : '#';
+    const secondHalf = patternString.slice(i + 1);
+    const variantString = `${firstHalf}${flippedChar}${secondHalf}`;
+    // console.log(`  ${variantString}`);
+
+    variants.push(variantString.split('|'));
+  }
+
+  return variants;
+};
+
+const checkPatternForSymmetry = (
+  pattern: string[],
+): {
+  colsLeftOfSymmetry?: number;
+  rowsAboveSymmetry?: number;
+} => {
+  const patternRows = pattern.slice();
+  let colsLeftOfSymmetry: number | undefined;
+  let rowsAboveSymmetry: number | undefined;
+
+  const firstRow = patternRows.shift()!;
+  const patternWidth = firstRow.length;
+  const startingColsToCheck = Array.from({ length: patternWidth - 1 }).map(
+    (_, idx) => idx + 1,
+  );
+  let possibleSymmetryCols = checkRowForLeftRightSymmetry({
+    colsToCheck: startingColsToCheck,
+    patternWidth,
+    row: firstRow,
+  });
+
+  const rowsAbove: string[] = [firstRow];
+  let nextRow: string | undefined;
+  while ((nextRow = patternRows[0])) {
+    if (nextRow === rowsAbove[0]) {
+      const symmetryRow = checkForUpDownSymmetry({
+        rowsAbove,
+        rowsBelow: patternRows,
+      });
+
+      if (symmetryRow !== undefined) {
+        rowsAboveSymmetry = symmetryRow;
+        break;
+      }
+    }
+
+    possibleSymmetryCols = checkRowForLeftRightSymmetry({
+      colsToCheck: possibleSymmetryCols,
+      patternWidth,
+      row: nextRow,
+    });
+
+    rowsAbove.unshift(patternRows.shift()!);
+    nextRow = patternRows[0];
+
+    if (nextRow === undefined && possibleSymmetryCols.length === 1) {
+      colsLeftOfSymmetry = possibleSymmetryCols[0]!;
+    }
+  }
+
+  return { colsLeftOfSymmetry, rowsAboveSymmetry };
+};
+
 // Run task one
 // eslint-disable-next-line complexity
 const runOne = () => {
@@ -96,98 +165,19 @@ const runOne = () => {
   const patterns = dataToUse
     .split('\n\n')
     .map((lines) => lines.split('\n').filter((line) => line.trim().length > 0));
-  // console.log('');
 
   let totalSum = 0;
   for (let patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
-    const patternRows = patterns[patternIdx]!.slice();
-    let colsLeftOfSymmetry = 0;
-    let rowsAboveSymmetry = 0;
-
-    //     console.log(`
-    // Pattern ${patternIdx + 1}:
-
-    //   ${patternRows.join('\n  ')}
-    // `);
-
-    const firstRow = patternRows.shift()!;
-    const patternWidth = firstRow.length;
-    const startingColsToCheck = Array.from({ length: patternWidth - 1 }).map(
-      (_, idx) => idx + 1,
-    );
-    let possibleSymmetryCols = checkRowForLeftRightSymmetry({
-      colsToCheck: startingColsToCheck,
-      patternWidth,
-      row: firstRow,
-    });
-
-    const rowsAbove: string[] = [firstRow];
-    let nextRow: string | undefined;
-    while ((nextRow = patternRows[0])) {
-      if (nextRow === rowsAbove[0]) {
-        const symmetryRow = checkForUpDownSymmetry({
-          rowsAbove,
-          rowsBelow: patternRows,
-        });
-
-        if (symmetryRow !== undefined) {
-          // console.log(`Found up-down symmetry at row ${symmetryRow}`);
-          rowsAboveSymmetry = symmetryRow;
-          break;
-        }
-      }
-
-      // console.log(
-      //   `Checking horizontal symmetry for line "${nextRow}" in columns [${possibleSymmetryCols}]`,
-      // );
-
-      possibleSymmetryCols = checkRowForLeftRightSymmetry({
-        colsToCheck: possibleSymmetryCols,
-        patternWidth,
-        row: nextRow,
-      });
-
-      rowsAbove.unshift(patternRows.shift()!);
-      nextRow = patternRows[0];
-
-      if (nextRow === undefined && possibleSymmetryCols.length === 1) {
-        colsLeftOfSymmetry = possibleSymmetryCols[0]!;
-      }
-    }
+    const nextPattern = patterns[patternIdx]!;
+    const { colsLeftOfSymmetry, rowsAboveSymmetry } =
+      checkPatternForSymmetry(nextPattern);
 
     // Add values for this pattern
-    if (colsLeftOfSymmetry > 0) {
-      //     const rows = patterns[patternIdx]!.map((nextRow) => {
-      //       const beforeMirror = nextRow.slice(0, colsLeftOfSymmetry);
-      //       const afterMirror = nextRow.slice(colsLeftOfSymmetry);
-
-      //       return `${beforeMirror} | ${afterMirror}`;
-      //     });
-      //     console.log(`  ***** NEXT PATTERN *****
-
-      // ${rows.join('\n  ')}
-
-      // Pattern #${
-      //   patternIdx + 1
-      // } has LEFT-RIGHT symmetry at COLUMN ${colsLeftOfSymmetry}`);
+    if (colsLeftOfSymmetry) {
       totalSum += colsLeftOfSymmetry;
-    } else if (rowsAboveSymmetry > 0) {
-      //     const rows = patterns[patternIdx]!;
-      //     rows.splice(
-      //       rowsAboveSymmetry,
-      //       0,
-      //       '',
-      //       Array.from({ length: lineLength }).fill('-').join(''),
-      //       '',
-      //     );
-      //     console.log(`  ***** NEXT PATTERN *****
-
-      // ${rows.join('\n  ')}
-
-      // Pattern #${patternIdx + 1} has UP-DOWN symmetry at ROW ${rowsAboveSymmetry}`);
+    } else if (rowsAboveSymmetry) {
       totalSum += 100 * rowsAboveSymmetry;
     }
-    // console.log('');
   }
 
   logAnswer({
@@ -202,11 +192,46 @@ const runOne = () => {
 const runTwo = () => {
   const taskStartedAt = performance.now();
   const dataToUse = USE_TEST_DATA ? DATA.TEST2 : DATA.REAL;
-  const lines = dataToUse.split('\n').filter((line) => line.trim().length > 0);
+  const patterns = dataToUse
+    .split('\n\n')
+    .map((lines) => lines.split('\n').filter((line) => line.trim().length > 0));
+
+  let totalSum = 0;
+  for (let patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
+    const basePattern = patterns[patternIdx]!;
+    const { colsLeftOfSymmetry: baseCols, rowsAboveSymmetry: baseRows } =
+      checkPatternForSymmetry(basePattern);
+    const patternVariants = getAllVariants(basePattern);
+
+    for (
+      let variantIdx = 0;
+      variantIdx < patternVariants.length;
+      variantIdx++
+    ) {
+      const nextPattern = patternVariants[variantIdx]!;
+      const { colsLeftOfSymmetry, rowsAboveSymmetry } =
+        checkPatternForSymmetry(nextPattern);
+
+      // Add values for this pattern
+      if (colsLeftOfSymmetry && colsLeftOfSymmetry !== baseCols) {
+        // console.log(
+        //   `Found left-right symmetry in variant ${variantIdx} at column ${colsLeftOfSymmetry}`,
+        // );
+        totalSum += colsLeftOfSymmetry;
+        break;
+      } else if (rowsAboveSymmetry && rowsAboveSymmetry !== baseRows) {
+        // console.log(
+        //   `Found up-down symmetry in variant ${variantIdx} at row ${rowsAboveSymmetry}`,
+        // );
+        totalSum += 100 * rowsAboveSymmetry;
+        break;
+      }
+    }
+  }
 
   logAnswer({
-    answer: lines.length,
-    expected: USE_TEST_DATA ? undefined : undefined,
+    answer: totalSum,
+    expected: USE_TEST_DATA ? 400 : undefined,
     partNum: 2,
     taskStartedAt,
   });
